@@ -1,6 +1,7 @@
 import { useState, createContext, useContext } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Hero from './components/Hero';
+import VideoShowcase from './components/VideoShowcase';
 import Services from './components/Services';
 import Philosophy from './components/Philosophy';
 import Portfolio from './components/Portfolio-new';
@@ -63,6 +64,7 @@ function App() {
         <div className="relative z-10">
           <Navigation isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
           <Hero />
+          <VideoShowcase />
           <Philosophy />
           <Services />
           <Portfolio />
