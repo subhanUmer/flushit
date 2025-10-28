@@ -1,0 +1,13 @@
+# Node dependencies
+node_modules/
+
+# Production build
+dist/
+
+# Environment files
+.env
+.env.local
+
+# Large media folder
+public/media/
+
