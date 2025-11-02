@@ -48,30 +48,48 @@ export default function Services() {
       bgColor: 'bg-yellow-400',
       textColor: 'text-black',
     },
-    {
-      icon: TrendingUp,
-      title: 'PAID MEDIA',
-      bad: 'Wasted Budget',
-      good: 'Maximum ROI',
-      description: 'Strategic campaigns that actually convert.',
-      features: ['Social Ads', 'Performance', 'Strategy', 'Optimization'],
-      bgColor: 'bg-yellow-400',
-      textColor: 'text-black',
-    },
-    {
-      icon: Play,
-      title: 'USER GENERATED',
-      bad: 'Fake Testimonials',
-      good: 'Real Trust',
-      description: 'Authentic content from real people.',
-      features: ['UGC Strategy', 'Creator Network', 'Testimonials', 'Community'],
-      bgColor: 'bg-yellow-400',
-      textColor: 'text-black',
-    },
   ];
 
   return (
     <section id="services" ref={containerRef} className="py-32 px-6 relative bg-white text-black overflow-hidden">
+      {/* Drifting yellow shapes */}
+      <motion.div
+        className="absolute top-20 left-10 w-24 h-24 bg-yellow-400 rounded-full opacity-20"
+        animate={{
+          x: [0, 100, 0],
+          y: [0, -50, 0],
+          rotate: [0, 180, 360],
+        }}
+        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+      />
+      <motion.div
+        className="absolute top-40 right-20 w-32 h-32 bg-yellow-400 opacity-15"
+        animate={{
+          x: [0, -80, 0],
+          y: [0, 80, 0],
+          rotate: [0, -180, -360],
+        }}
+        transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+      />
+      <motion.div
+        className="absolute bottom-40 left-1/4 w-20 h-20 bg-yellow-400 rounded-full opacity-25"
+        animate={{
+          x: [0, 60, 0],
+          y: [0, -60, 0],
+          scale: [1, 1.2, 1],
+        }}
+        transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
+      />
+      <motion.div
+        className="absolute bottom-20 right-1/3 w-28 h-28 bg-yellow-400 opacity-10"
+        animate={{
+          x: [0, -100, 0],
+          y: [0, 50, 0],
+          rotate: [0, 90, 180],
+        }}
+        transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
+      />
+
       <motion.div
         className="absolute top-0 left-0 w-full h-3 bg-yellow-400"
         initial={{ scaleX: 0 }}
@@ -114,11 +132,11 @@ export default function Services() {
           </motion.p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-0 border-4 border-black">
+        <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-0 border-4 border-black max-w-5xl mx-auto">
           {services.map((service, index) => (
             <motion.div
               key={index}
-              className={`relative ${service.bgColor} ${service.textColor} p-8 border-r-4 border-b-4 border-black last:border-r-0 overflow-hidden group cursor-pointer`}
+              className={`relative ${service.bgColor} ${service.textColor} p-4 border-r-4 border-b-4 border-black last:border-r-0 overflow-hidden group cursor-pointer`}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{
                 opacity: isInView ? 1 : 0,
@@ -138,35 +156,35 @@ export default function Services() {
 
               <div className="relative z-10">
                 <service.icon
-                  className={`mb-4 ${hoveredIndex === index ? 'text-yellow-400' : ''}`}
-                  size={48}
+                  className={`mb-2 ${hoveredIndex === index ? 'text-yellow-400' : ''}`}
+                  size={32}
                   strokeWidth={3}
                 />
 
-                <h3 className={`text-2xl md:text-3xl font-black mb-4 ${hoveredIndex === index ? 'text-white' : ''}`}>
+                <h3 className={`text-lg md:text-xl font-black mb-2 ${hoveredIndex === index ? 'text-white' : ''}`}>
                   {service.title}
                 </h3>
 
                 <motion.div
-                  className="mb-4"
+                  className="mb-2"
                   animate={{
                     opacity: hoveredIndex === index ? 1 : 0,
                     height: hoveredIndex === index ? 'auto' : 0,
                   }}
                 >
-                  <p className="text-red-400 line-through font-bold mb-1">{service.bad}</p>
-                  <p className="text-yellow-500 font-bold text-xl">↓ {service.good}</p>
+                  <p className="text-red-400 line-through font-bold text-xs mb-1">{service.bad}</p>
+                  <p className="text-yellow-500 font-bold text-sm">↓ {service.good}</p>
                 </motion.div>
 
-                <p className={`mb-6 font-semibold ${hoveredIndex === index ? 'text-gray-300' : ''}`}>
+                <p className={`mb-3 font-semibold text-sm ${hoveredIndex === index ? 'text-gray-300' : ''}`}>
                   {service.description}
                 </p>
 
-                <ul className="space-y-2 font-bold text-sm">
+                <ul className="space-y-1 font-bold text-xs">
                   {service.features.map((feature, i) => (
                     <motion.li
                       key={i}
-                      className={`flex items-center gap-2 ${hoveredIndex === index ? 'text-white' : ''}`}
+                      className={`flex items-center gap-1 ${hoveredIndex === index ? 'text-white' : ''}`}
                       initial={{ x: -20, opacity: 0 }}
                       animate={{
                         x: hoveredIndex === index ? 0 : -20,

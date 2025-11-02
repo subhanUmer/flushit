@@ -144,6 +144,53 @@ export default function Portfolio() {
       ref={containerRef}
       className={`py-32 px-6 relative overflow-hidden ${isDarkMode ? 'bg-black' : 'bg-white'}`}
     >
+      {/* Drifting yellow shapes */}
+      <motion.div
+        className="absolute top-32 left-16 w-28 h-28 bg-yellow-400 rounded-full opacity-15"
+        animate={{
+          x: [0, 120, 0],
+          y: [0, -60, 0],
+          rotate: [0, 180, 360],
+        }}
+        transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
+      />
+      <motion.div
+        className="absolute top-1/4 right-24 w-36 h-36 bg-yellow-400 opacity-10"
+        animate={{
+          x: [0, -90, 0],
+          y: [0, 90, 0],
+          rotate: [0, -180, -360],
+        }}
+        transition={{ duration: 28, repeat: Infinity, ease: 'linear' }}
+      />
+      <motion.div
+        className="absolute bottom-1/3 left-1/3 w-24 h-24 bg-yellow-400 rounded-full opacity-20"
+        animate={{
+          x: [0, 70, 0],
+          y: [0, -70, 0],
+          scale: [1, 1.3, 1],
+        }}
+        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+      />
+      <motion.div
+        className="absolute bottom-32 right-1/4 w-32 h-32 bg-yellow-400 opacity-12"
+        animate={{
+          x: [0, -110, 0],
+          y: [0, 60, 0],
+          rotate: [0, 90, 180],
+        }}
+        transition={{ duration: 24, repeat: Infinity, ease: 'linear' }}
+      />
+      <motion.div
+        className="absolute top-2/3 left-20 w-20 h-20 bg-yellow-400 rounded-full opacity-18"
+        animate={{
+          x: [0, 80, 0],
+          y: [0, -40, 0],
+          rotate: [0, 360, 720],
+        }}
+        transition={{ duration: 26, repeat: Infinity, ease: 'linear' }}
+      />
+
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
         <motion.div
@@ -199,7 +246,7 @@ export default function Portfolio() {
 
         {/* Media Grid */}
         <motion.div 
-          className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-w-6xl mx-auto"
           layout
         >
           {filteredItems.map((item, index) => {
@@ -257,17 +304,17 @@ export default function Portfolio() {
                 )}
 
                 {/* Content */}
-                <div className="relative h-full p-4 flex flex-col justify-between">
+                <div className="relative h-full p-3 flex flex-col justify-between">
                   <div>
                     <motion.div
-                      className="inline-flex items-center gap-2 px-3 py-1 bg-black/80 backdrop-blur-sm text-white font-black text-xs mb-3 rounded-full"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 bg-black/80 backdrop-blur-sm text-white font-black text-[10px] mb-2 rounded-full"
                       animate={{
                         y: hoveredIndex === index ? -5 : 0,
                         rotate: hoveredIndex === index ? [0, 3, -3, 0] : 0,
                       }}
                       transition={{ duration: 0.5 }}
                     >
-                      <IconComponent size={12} />
+                      <IconComponent size={10} />
                       {item.category}
                     </motion.div>
                   </div>
@@ -279,10 +326,10 @@ export default function Portfolio() {
                     }}
                     transition={{ duration: 0.3 }}
                   >
-                    <h3 className="text-lg font-black mb-2 leading-tight text-white drop-shadow-lg">
+                    <h3 className="text-sm font-black mb-1 leading-tight text-white drop-shadow-lg">
                       {item.title}
                     </h3>
-                    <p className="text-sm text-gray-200 opacity-80 group-hover:opacity-100 transition-opacity">
+                    <p className="text-xs text-gray-200 opacity-80 group-hover:opacity-100 transition-opacity">
                       {item.description}
                     </p>
                   </motion.div>
@@ -290,7 +337,7 @@ export default function Portfolio() {
 
                 {/* Funky corner decoration */}
                 <motion.div
-                  className="absolute top-0 right-0 w-0 h-0 border-l-[30px] border-l-transparent border-t-[30px] border-t-yellow-400"
+                  className="absolute top-0 right-0 w-0 h-0 border-l-[20px] border-l-transparent border-t-[20px] border-t-yellow-400"
                   animate={{
                     scale: hoveredIndex === index ? 1.2 : 1,
                     rotate: hoveredIndex === index ? 180 : 0,
