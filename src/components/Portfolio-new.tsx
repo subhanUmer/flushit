@@ -127,6 +127,7 @@ export default function Portfolio({ isGsapLoaded }: Props) {
             start: "top top",
             // --- 2. ADD THE DURATION TO THE 'end' ---
             end: `+=${scrollWidth + fadeOutDuration}`,
+            // Reverted: No pinSpacing: false
           },
         });
 

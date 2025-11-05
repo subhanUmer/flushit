@@ -75,11 +75,12 @@ export default function Philosophy({ isGsapLoaded }: Props) {
 
   const backgroundX = useTransform(scrollYProgress, [0, 1], ["0%", "-100%"]);
 
-  const backgroundGradient = `linear-gradient(to right, 
-    #D3D3D3 0%,
-    ${isDarkMode ? "black" : "white"} 50%,
-    #facc15 100%
-  )`;
+  // --- THIS VARIABLE IS NOW REMOVED ---
+  // const backgroundGradient = `linear-gradient(to right,
+  //   #D3D3D3 0%,
+  //   ${isDarkMode ? "black" : "white"} 50%,
+  //   #facc15 100%
+  // )`;
 
   useLayoutEffect(() => {
     if (gsapLoaded && window.gsap && window.ScrollTrigger) {
@@ -91,7 +92,6 @@ export default function Philosophy({ isGsapLoaded }: Props) {
 
       const scrollWidth = horizontalScroll.scrollWidth - window.innerWidth;
 
-      // --- 1. ADD EXTRA SCROLL DURATION FOR THE FADE-OUT ---
       const fadeOutDuration = window.innerHeight; // 100vh
 
       let ctx = gsap.context(() => {
@@ -101,21 +101,19 @@ export default function Philosophy({ isGsapLoaded }: Props) {
             pin: pinElement,
             scrub: 1,
             start: "top top",
-            // --- 2. ADD THE DURATION TO THE 'end' ---
             end: `+=${scrollWidth + fadeOutDuration}`,
+            // Reverted to jumping version
           },
         });
 
-        // --- 3. FIRST, do the horizontal scroll ---
         tl.to(horizontalScroll, {
           x: -scrollWidth,
           ease: "none",
         });
 
-        // --- 4. NEW: THEN, fade out the *entire* pinned section ---
         tl.to(pinElement, {
-          scale: 0.9, // Gently shrink the section
-          opacity: 0, // Fade it out
+          scale: 0.9,
+          opacity: 0,
           ease: "power2.inOut",
         });
       }, componentRef);
@@ -129,13 +127,11 @@ export default function Philosophy({ isGsapLoaded }: Props) {
       <div
         ref={pinRef}
         className={`relative h-screen w-full overflow-hidden`}
-        // Set initial scale and opacity for the fade-out
         style={{ scale: 1, opacity: 1 }}
       >
-        <AnimatedWaterBackground
-          backgroundX={backgroundX}
-          gradient={backgroundGradient}
-        />
+        {/* --- THIS IS THE FIX --- */}
+        {/* The 'gradient' prop is removed, matching your new file */}
+        <AnimatedWaterBackground backgroundX={backgroundX} />
 
         <div
           ref={scrollRef}
