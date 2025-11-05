@@ -1,16 +1,26 @@
 import { motion } from "framer-motion";
-// --- REMOVED useTheme ---
+// import { useTheme } from "../App"; // Removed
 import { useRef, useLayoutEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-export default function Footer() {
-  // --- REMOVED useTheme and isDarkMode ---
+// Define props type
+type Props = {
+  isGsapLoaded: boolean;
+};
+
+// Accept the prop
+export default function Footer({ isGsapLoaded }: Props) {
+  // All theme logic removed
   const footerRef = useRef(null);
 
   useLayoutEffect(() => {
+    // --- THIS IS THE FIX ---
+    // Only run if GSAP is loaded
+    if (!isGsapLoaded) return;
+
     const footer = footerRef.current;
     if (!footer) return;
 
@@ -30,14 +40,13 @@ export default function Footer() {
     }, footerRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [isGsapLoaded]); // <-- Add isGsapLoaded to dependency array
 
   const footerText = "FLUSH THE FLUFF";
 
   return (
     <footer
       ref={footerRef}
-      // --- MODIFIED: Hard-coded to light ---
       className={`relative py-12 bg-white border-t-4 border-brand-yellow overflow-hidden`}
     >
       {/* ... (Marquee elements are unchanged) ... */}
@@ -78,7 +87,6 @@ export default function Footer() {
           transition={{ duration: 35, repeat: Infinity, ease: "linear" }}
         >
           <h2
-            // --- MODIFIED: Hard-coded to light ---
             className={`text-4xl md:text-6xl font-display uppercase inline-block mx-4 text-transparent text-stroke-black`}
             style={{ WebkitTextStroke: "1px black" }}
           >

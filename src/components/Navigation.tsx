@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-// --- REMOVED useTheme ---
 import { X } from "lucide-react";
 
-// ... (Animation variants are unchanged) ...
+// Animation variants (unchanged)
 const overlayVariants = {
   hidden: {
     y: "-100%",
@@ -41,24 +40,17 @@ const navLinks = [
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // --- REMOVED useTheme, isDarkMode, toggleTheme ---
-
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
     <>
-      {/* HEADER BAR (Always visible) */}
       <header className="fixed top-0 left-0 right-0 z-[1000] p-4 md:p-6">
         <div className="flex justify-between items-center">
-          {/* Logo */}
           <a href="#home" className="text-2xl font-display font-black z-50">
             FLUSH<span className="text-brand-yellow">.</span>
           </a>
-
-          {/* Desktop Menu Controls */}
           <div className="flex items-center gap-4">
-            {/* --- REMOVED THEME TOGGLE BUTTON --- */}
-
+            {/* Theme toggle button removed */}
             <button
               onClick={() => setIsMenuOpen(true)}
               className="relative z-50 font-display font-black text-xl p-2"
@@ -70,18 +62,15 @@ export default function Navigation() {
         </div>
       </header>
 
-      {/* FULL-SCREEN OVERLAY (Animated) */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            // --- Hard-coded to light theme (yellow/black) ---
             className="fixed inset-0 z-[9000] bg-brand-yellow text-black p-6 flex flex-col justify-between"
             variants={overlayVariants}
             initial="hidden"
             animate="visible"
             exit="hidden"
           >
-            {/* Top Bar of Overlay */}
             <div className="flex justify-between items-center">
               <span className="text-2xl font-display font-black">
                 FLUSH<span className="text-black">.</span>
@@ -94,8 +83,6 @@ export default function Navigation() {
                 CLOSE <X size={20} className="inline" />
               </button>
             </div>
-
-            {/* Main Links */}
             <motion.nav
               className="flex flex-col items-center"
               variants={linkContainerVariants}
@@ -115,8 +102,6 @@ export default function Navigation() {
                 </motion.a>
               ))}
             </motion.nav>
-
-            {/* Bottom Footer of Overlay */}
             <div className="flex justify-between items-center text-sm font-bold">
               <p>© {new Date().getFullYear()} Flushit Creative</p>
               <div className="flex gap-4">

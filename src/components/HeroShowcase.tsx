@@ -1,11 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Play, Pause, Volume2, VolumeX } from "lucide-react";
-// --- REMOVED useTheme ---
+// import { useTheme } from "../App"; // Removed
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { motion } from "framer-motion";
 
 gsap.registerPlugin(ScrollTrigger);
+
+// Define props type
+type Props = {
+  isGsapLoaded: boolean;
+};
 
 // ... (particleImagePaths list is unchanged) ...
 const particleImagePaths = [
@@ -25,26 +30,23 @@ const particleImagePaths = [
   "/media/Oraan-case-study-2.png",
 ];
 
-export default function HeroShowcase() {
-  // --- REMOVED useTheme ---
-
-  // --- Refs for Animation ---
+// Accept the prop
+export default function HeroShowcase({ isGsapLoaded }: Props) {
+  // All theme logic removed
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const componentRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const videoWrapperRef = useRef<HTMLDivElement>(null);
 
-  // --- Refs for Video Player ---
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
 
-  // --- STABLE: Use useRef for shared animation progress & theme ---
   const condenseProgress = useRef({ value: 0 });
-  // --- REMOVED isDarkModeRef and its useEffect ---
 
   // --- 1. Canvas Animation Logic (The Tornado) ---
   useEffect(() => {
+    // ... (This entire useEffect is unchanged as it doesn't use GSAP) ...
     const canvas = canvasRef.current;
     if (!canvas) return;
     const context = canvas.getContext("2d");
@@ -56,7 +58,6 @@ export default function HeroShowcase() {
       currentTime = 0,
       delta = 0;
 
-    // ... (Particle class and logic is unchanged) ...
     const particles: any[] = [],
       particleCount = 60,
       particleImageSize = 150,
@@ -207,14 +208,10 @@ export default function HeroShowcase() {
             this.originalY3D = this.y3D;
             this.originalScale = this.scale;
           }
-          // --- Target CENTER-SCREEN for "vortex" ---
           const targetX = this.canvas.width / 2;
-          const targetY = this.canvas.height / 2; // Condense at the center
+          const targetY = this.canvas.height / 2;
           const targetScale = 0;
-
-          // Accelerate rotation to create vortex
           this.rSpeed += condenseProgress.current.value * 0.005;
-
           this.x3D = gsap.utils.interpolate(
             this.originalX3D,
             targetX,
@@ -230,7 +227,6 @@ export default function HeroShowcase() {
             targetScale,
             condenseProgress.current.value
           );
-
           this.width3D = this.size * this.scale;
           this.height3D = this.width3D * this.aspectRatio;
         } else {
@@ -249,9 +245,7 @@ export default function HeroShowcase() {
         this.context.save();
         this.context.translate(this.x3D, this.y3D);
         this.context.rotate(this.rotation);
-
         this.context.globalAlpha = 1;
-
         this.context.drawImage(
           this.image,
           -this.width3D / 2,
@@ -275,8 +269,7 @@ export default function HeroShowcase() {
     }
 
     function clearCanvas() {
-      // --- MODIFIED: Hard-coded to white ---
-      context.fillStyle = "white";
+      context.fillStyle = "white"; // Hard-coded
       context.fillRect(0, 0, canvas.width, canvas.height);
     }
     function update() {
@@ -317,10 +310,14 @@ export default function HeroShowcase() {
       particles.length = 0;
       particleImages.length = 0;
     };
-  }, []);
+  }, []); // This useEffect is fine, no GSAP.
 
-  // --- 2. GSAP "Shrink to Reveal" Animation (Unchanged) ---
+  // --- 2. GSAP "Shrink to Reveal" Animation ---
   useEffect(() => {
+    // --- THIS IS THE FIX ---
+    // Only run this effect if isGsapLoaded is true
+    if (!isGsapLoaded) return;
+
     const component = componentRef.current;
     const content = contentRef.current;
     const videoWrapper = videoWrapperRef.current;
@@ -342,7 +339,7 @@ export default function HeroShowcase() {
         scrollTrigger: {
           trigger: component,
           start: "top top",
-          end: "+=500vh",
+          end: "+=300vh",
           scrub: 1,
           pin: true,
         },
@@ -381,7 +378,7 @@ export default function HeroShowcase() {
     }, component);
 
     return () => ctx.revert();
-  }, []);
+  }, [isGsapLoaded]); // <-- Add isGsapLoaded to dependency array
 
   // --- 3. Video Player Logic (Unchanged) ---
   const togglePlay = () => {
@@ -395,12 +392,14 @@ export default function HeroShowcase() {
       }
     }
   };
+  // ... (rest of video logic is unchanged) ...
   const toggleMute = () => {
     if (videoRef.current) {
       videoRef.current.muted = !isMuted;
       setIsMuted(!isMuted);
     }
   };
+
   const onVideoError = (e: any) => {
     console.error(
       "Video Error: Failed to load video. Check path and `public` folder.",
@@ -509,7 +508,6 @@ export default function HeroShowcase() {
           style={{
             width: "100%",
             height: "100%",
-            // --- MODIFIED: Hard-coded to white ---
             background: "white",
             clipPath: "circle(150% at 50% 50%)",
           }}
@@ -523,21 +521,13 @@ export default function HeroShowcase() {
           <div className="max-w-7xl mx-auto">
             <div>
               <h1 className="text-6xl md:text-8xl lg:text-9xl font-black mb-8 leading-none uppercase">
-                <span
-                  // --- MODIFIED: Hard-coded to light ---
-                  className={`block text-black`}
-                >
-                  FLUSH
-                </span>
+                <span className={`block text-black`}>FLUSH</span>
                 <span className="block bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 bg-clip-text text-transparent">
                   THE BAD
                 </span>
               </h1>
               <div className="mb-12">
-                <p
-                  // --- MODIFIED: Hard-coded to light ---
-                  className={`text-2xl md:text-4xl font-bold text-black mb-4`}
-                >
+                <p className={`text-2xl md:text-4xl font-bold text-black mb-4`}>
                   WE DON'T BRAINSTORM.
                 </p>
                 <p className="text-3xl md:text-5xl font-black text-brand-yellow">
@@ -545,7 +535,6 @@ export default function HeroShowcase() {
                 </p>
               </div>
               <p
-                // --- MODIFIED: Hard-coded to light ---
                 className={`text-xl md:text-2xl text-gray-700 mb-12 max-w-4xl mx-auto`}
               >
                 Stop swimming in bad ideas. Start making a splash.

@@ -8,19 +8,29 @@ import {
 } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef, useState, useLayoutEffect } from "react";
-// We don't need useTheme anymore
+// import { useTheme } from "../App"; // Removed
 import { DoodleCircle, DoodleArrow } from "./Artifacts";
-import gsap from "gsap"; // Import GSAP
-import { ScrollTrigger } from "gsap/ScrollTrigger"; // Import ScrollTrigger
 
-gsap.registerPlugin(ScrollTrigger); // Register the plugin
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-export default function Portfolio() {
+gsap.registerPlugin(ScrollTrigger);
+
+// Define props type
+type Props = {
+  isGsapLoaded: boolean;
+};
+
+export default function Portfolio({ isGsapLoaded }: Props) {
+  // const { isDarkMode, gsapLoaded } = useTheme(); // Removed
+  const isDarkMode = false; // Hard-coded to light theme
+  const gsapLoaded = isGsapLoaded; // Use prop
+
   const componentRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // --- Your Original Data (Unchanged) ---
+  // ... (mediaItems array is unchanged) ...
   const mediaItems = [
     {
       id: 1,
@@ -94,55 +104,65 @@ export default function Portfolio() {
     },
   ];
 
-  // --- GSAP Horizontal Scroll Animation ---
   useLayoutEffect(() => {
-    // --- THIS IS THE FIX ---
-    // We add a short delay to wait for App.tsx to load GSAP
-    // and for the browser to paint the scrollable elements.
-    const timeout = setTimeout(() => {
-      if (window.gsap && window.ScrollTrigger) {
-        const gsap = window.gsap;
-        const horizontalScroll = scrollRef.current;
-        const pinElement = pinRef.current;
-        const componentElement = componentRef.current;
+    if (gsapLoaded && window.gsap && window.ScrollTrigger) {
+      const gsap = window.gsap;
+      const horizontalScroll = scrollRef.current;
+      const pinElement = pinRef.current;
+      const componentElement = componentRef.current;
 
-        if (!horizontalScroll || !pinElement || !componentElement) return;
+      if (!horizontalScroll || !pinElement || !componentElement) return;
 
-        const scrollWidth = horizontalScroll.scrollWidth - window.innerWidth;
+      const scrollWidth = horizontalScroll.scrollWidth - window.innerWidth;
 
-        let ctx = gsap.context(() => {
-          const tl = gsap.timeline({
-            scrollTrigger: {
-              trigger: componentElement,
-              pin: pinElement,
-              scrub: 1,
-              start: "top top",
-              end: `+=${scrollWidth}`,
-            },
-          });
+      // --- 1. ADD EXTRA SCROLL DURATION FOR THE FADE-OUT ---
+      const fadeOutDuration = window.innerHeight; // 100vh
 
-          tl.to(horizontalScroll, {
-            x: -scrollWidth,
-            ease: "none",
-          });
-        }, componentRef);
+      let ctx = gsap.context(() => {
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: componentElement,
+            pin: pinElement,
+            scrub: 1,
+            start: "top top",
+            // --- 2. ADD THE DURATION TO THE 'end' ---
+            end: `+=${scrollWidth + fadeOutDuration}`,
+          },
+        });
 
-        return () => ctx.revert();
-      }
-    }, 100); // 100ms delay
+        // --- 3. FIRST, do the horizontal scroll ---
+        tl.to(horizontalScroll, {
+          x: -scrollWidth,
+          ease: "none",
+        });
 
-    return () => clearTimeout(timeout);
-  }, []); // Empty array is correct
+        // --- 4. NEW: THEN, fade out the *entire* pinned section ---
+        tl.to(pinElement, {
+          scale: 0.9,
+          opacity: 0,
+          ease: "power2.inOut",
+        });
+      }, componentRef);
+
+      return () => ctx.revert();
+    }
+  }, [gsapLoaded, isDarkMode]);
 
   return (
     <section
       id="work"
       ref={componentRef}
-      className={`relative bg-white overflow-hidden`}
+      className={`relative ${
+        isDarkMode ? "bg-black" : "bg-white"
+      } overflow-hidden`}
     >
       <div
         ref={pinRef}
-        className={`relative h-screen w-full overflow-hidden bg-white`}
+        className={`relative h-screen w-full overflow-hidden ${
+          isDarkMode ? "bg-black" : "bg-white"
+        }`}
+        // Set initial scale and opacity for the fade-out
+        style={{ scale: 1, opacity: 1 }}
       >
         {/* This is the horizontal track */}
         <div
@@ -152,7 +172,11 @@ export default function Portfolio() {
           {/* --- SLIDE 1: Title Card --- */}
           <div className="relative flex h-screen w-screen items-center justify-center p-12">
             <h2 className="text-6xl md:text-8xl lg:text-9xl font-black uppercase leading-none mb-8">
-              <span className={`block text-black`}>FLUSHED</span>
+              <span
+                className={`block ${isDarkMode ? "text-white" : "text-black"}`}
+              >
+                FLUSHED
+              </span>
               <motion.span
                 className="block bg-gradient-to-r from-yellow-300 via-brand-yellow to-amber-500 bg-clip-text text-transparent"
                 style={{ backgroundSize: "200% 100%" }}
@@ -174,7 +198,9 @@ export default function Portfolio() {
                 key={item.id}
                 className="relative flex h-screen w-screen items-center justify-center p-12 border-l-4 border-dashed"
                 style={{
-                  borderColor: "rgba(0, 0, 0, 0.1)",
+                  borderColor: isDarkMode
+                    ? "rgba(255, 255, 255, 0.1)"
+                    : "rgba(0, 0, 0, 0.1)",
                 }}
               >
                 {/* Background Video / Image */}
@@ -202,8 +228,9 @@ export default function Portfolio() {
                   <div
                     className="absolute inset-0"
                     style={{
-                      background:
-                        "linear-gradient(90deg, #FFF 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 100%)",
+                      background: isDarkMode
+                        ? "linear-gradient(90deg, #000 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%)"
+                        : "linear-gradient(90deg, #FFF 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 100%)",
                     }}
                   />
                 </div>
@@ -216,11 +243,17 @@ export default function Portfolio() {
                       {item.category}
                     </div>
                     <h3
-                      className={`text-5xl md:text-7xl font-black uppercase mb-6 text-black`}
+                      className={`text-5xl md:text-7xl font-black uppercase mb-6 ${
+                        isDarkMode ? "text-white" : "text-black"
+                      }`}
                     >
                       {item.title}
                     </h3>
-                    <p className={`text-xl md:text-2xl max-w-lg text-gray-700`}>
+                    <p
+                      className={`text-xl md:text-2xl max-w-lg ${
+                        isDarkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
                       {item.description}
                     </p>
                   </div>

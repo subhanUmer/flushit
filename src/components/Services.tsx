@@ -8,18 +8,24 @@ import {
 } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef, useState, useLayoutEffect } from "react";
-// --- REMOVED useTheme ---
+// import { useTheme } from "../App"; // Removed
 import { DoodleSquiggle, DoodleStar } from "./Artifacts";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-export default function Services() {
+// Define props type
+type Props = {
+  isGsapLoaded: boolean;
+};
+
+// Accept the prop
+export default function Services({ isGsapLoaded }: Props) {
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { once: false, amount: 0.2 });
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  // --- REMOVED useTheme and isDarkMode ---
+  // All theme logic removed
 
   const contentRef = useRef(null);
 
@@ -83,6 +89,10 @@ export default function Services() {
   ];
 
   useLayoutEffect(() => {
+    // --- THIS IS THE FIX ---
+    // Only run if GSAP is loaded
+    if (!isGsapLoaded) return;
+
     const content = contentRef.current;
     const section = containerRef.current;
     if (!content || !section) return;
@@ -103,13 +113,12 @@ export default function Services() {
     }, containerRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [isGsapLoaded]); // <-- Add isGsapLoaded to dependency array
 
   return (
     <section
       id="services"
       ref={containerRef}
-      // --- MODIFIED: Hard-coded to light ---
       className={`py-32 px-6 relative bg-white overflow-hidden`}
     >
       {/* ... (Background parallax elements are unchanged) ... */}
@@ -161,7 +170,6 @@ export default function Services() {
               transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
             >
               <h2
-                // --- MODIFIED: Hard-coded to light ---
                 className={`text-6xl md:text-8xl lg:text-9xl font-black uppercase inline-block mx-4 text-black`}
               >
                 THE WASH CYCLE
@@ -207,7 +215,6 @@ export default function Services() {
           {services.map((service, index) => (
             <motion.div
               key={index}
-              // --- MODIFIED: Hard-coded to light ---
               className={`relative bg-gray-100 p-6 border-2 border-gray-200 rounded-lg overflow-hidden group cursor-pointer`}
               onHoverStart={() => setHoveredIndex(index)}
               onHoverEnd={() => setHoveredIndex(null)}
@@ -229,7 +236,6 @@ export default function Services() {
                   strokeWidth={3}
                 />
                 <h3
-                  // --- MODIFIED: Hard-coded to light ---
                   className={`text-xl font-black mb-2 transition-colors ${
                     hoveredIndex === index ? "text-black" : "text-black"
                   }`}
@@ -248,7 +254,7 @@ export default function Services() {
                     {service.bad}
                   </motion.p>
                   <motion.p
-                    className="text-black font-bold text-sm" // <-- Was yellow
+                    className="text-black font-bold text-sm"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{
                       opacity: hoveredIndex === index ? 1 : 0,
@@ -259,7 +265,6 @@ export default function Services() {
                   </motion.p>
                 </motion.div>
                 <p
-                  // --- MODIFIED: Hard-coded to light ---
                   className={`mb-3 font-semibold text-sm transition-colors ${
                     hoveredIndex === index ? "text-gray-800" : "text-gray-600"
                   }`}
@@ -270,7 +275,6 @@ export default function Services() {
                   {service.features.map((feature, i) => (
                     <motion.li
                       key={i}
-                      // --- MODIFIED: Hard-coded to light ---
                       className={`flex items-center gap-1 transition-colors ${
                         hoveredIndex === index ? "text-black" : "text-gray-700"
                       }`}
@@ -289,7 +293,6 @@ export default function Services() {
                   ))}
                 </ul>
               </div>
-              {/* Yellow flush hover effect */}
               <motion.div
                 className="absolute inset-0 bg-brand-yellow z-0"
                 initial={{ y: "100%" }}

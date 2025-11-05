@@ -1,4 +1,4 @@
-import { useState, createContext, useContext, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Services from "./components/Services";
 import Philosophy from "./components/Philosophy";
@@ -9,31 +9,29 @@ import HeroShowcase from "./components/HeroShowcase";
 import CustomCursor from "./components/CustomCursor";
 import Footer from "./components/Footer";
 
-// --- REMOVED ThemeContext and useTheme ---
+// All ThemeContext logic has been removed.
 
 function App() {
-  // --- REMOVED isDarkMode state and toggleTheme function ---
   const { scrollYProgress } = useScroll();
+  // --- 1. ADD STATE TO TRACK IF GSAP IS LOADED ---
+  const [isGsapLoaded, setIsGsapLoaded] = useState(false);
 
-  // ... (GSAP useEffect remains unchanged) ...
   useEffect(() => {
-    // Check if GSAP is already loaded
     if (window.gsap && window.ScrollTrigger) {
       window.gsap.registerPlugin(window.ScrollTrigger);
+      setIsGsapLoaded(true); // Set state if already loaded
       return;
     }
 
     let gsapScript: HTMLScriptElement | null = null;
     let scrollTriggerScript: HTMLScriptElement | null = null;
 
-    // Load GSAP
     gsapScript = document.createElement("script");
     gsapScript.src =
       "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js";
     gsapScript.async = true;
     document.body.appendChild(gsapScript);
 
-    // Load ScrollTrigger after GSAP
     gsapScript.onload = () => {
       scrollTriggerScript = document.createElement("script");
       scrollTriggerScript.src =
@@ -41,19 +39,17 @@ function App() {
       scrollTriggerScript.async = true;
       document.body.appendChild(scrollTriggerScript);
 
-      // When ScrollTrigger loads, register it
       scrollTriggerScript.onload = () => {
         if (window.gsap && window.ScrollTrigger) {
           window.gsap.registerPlugin(window.ScrollTrigger);
+          setIsGsapLoaded(true); // <-- 2. SET STATE ONCE LOADED
         } else {
           console.error("GSAP or ScrollTrigger failed to load.");
         }
       };
     };
-
     gsapScript.onerror = () => console.error("Failed to load GSAP script.");
 
-    // Cleanup function
     return () => {
       if (gsapScript && gsapScript.parentElement) {
         document.body.removeChild(gsapScript);
@@ -62,48 +58,44 @@ function App() {
         document.body.removeChild(scrollTriggerScript);
       }
     };
-  }, []); // Run only once on component mount
+  }, []);
 
-  // --- MODIFIED: Removed ternary, hard-coded to light theme ---
+  // Hard-coded to light theme
   const backgroundColor = useTransform(
     scrollYProgress,
     [0, 0.15, 0.3, 0.5],
     [
-      "rgb(245, 245, 245)", // Light gray
-      "rgb(250, 250, 250)", // Lighter gray
-      "rgb(251, 191, 36)", // Yellow-400 (bright flush)
-      "rgb(255, 255, 255)", // White (final)
+      "rgb(245, 245, 245)",
+      "rgb(250, 250, 250)",
+      "rgb(251, 191, 36)",
+      "rgb(255, 255, 255)",
     ]
   );
 
   const backgroundOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   return (
-    // --- REMOVED ThemeContext.Provider ---
     <div
-      // --- MODIFIED: Hard-coded to light theme ---
       className={`min-h-screen bg-white text-black overflow-x-hidden relative cursor-none`}
     >
       <CustomCursor />
 
-      {/* Scroll-based color transition background */}
       <motion.div
         className="fixed inset-0 pointer-events-none z-0"
         style={{ backgroundColor, opacity: backgroundOpacity }}
       />
 
-      {/* Content */}
       <div className="relative z-10">
         <Navigation />
-        <HeroShowcase />
-        <Philosophy />
-        <Services />
-        <Portfolio />
-        <Contact />
-        <Footer />
+        {/* --- 3. PASS PROP TO ALL COMPONENTS THAT USE GSAP --- */}
+        <HeroShowcase isGsapLoaded={isGsapLoaded} />
+        <Philosophy isGsapLoaded={isGsapLoaded} />
+        <Services isGsapLoaded={isGsapLoaded} />
+        <Portfolio isGsapLoaded={isGsapLoaded} />
+        <Contact isGsapLoaded={isGsapLoaded} />
+        <Footer isGsapLoaded={isGsapLoaded} />
       </div>
     </div>
-    // --- REMOVED ThemeContext.Provider ---
   );
 }
 

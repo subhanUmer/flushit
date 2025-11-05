@@ -1,12 +1,13 @@
 import { useRef, useLayoutEffect } from "react";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
-// We don't need useTheme anymore
-import gsap from "gsap"; // Import GSAP
-import { ScrollTrigger } from "gsap/ScrollTrigger"; // Import ScrollTrigger
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import AnimatedWaterBackground from "./AnimatedWaterBackground";
+// import { useTheme } from "../App"; // Removed
 
-gsap.registerPlugin(ScrollTrigger); // Register the plugin
+gsap.registerPlugin(ScrollTrigger);
 
-// --- 1. DATA FOR "FLUSH MASTERS" ---
+// ... (team, badIdeas, goodIdeas data is unchanged) ...
 const team = [
   {
     name: "Jane 'Drain' Doe",
@@ -27,8 +28,6 @@ const team = [
     img: "https://source.unsplash.com/400x400/?portrait,person,professional",
   },
 ];
-
-// --- 2. DATA FOR "IDEA CLOUDS" ---
 const badIdeas = [
   "CLUTTER",
   "NOISE",
@@ -52,8 +51,16 @@ const goodIdeas = [
   "FLOW",
 ];
 
-// --- 3. REBUILT HORIZONTAL SCROLL COMPONENT ---
-export default function Philosophy() {
+// Define props type
+type Props = {
+  isGsapLoaded: boolean;
+};
+
+export default function Philosophy({ isGsapLoaded }: Props) {
+  // const { isDarkMode, gsapLoaded } = useTheme(); // Removed
+  const isDarkMode = false; // Hard-coded to light theme
+  const gsapLoaded = isGsapLoaded; // Use prop
+
   const componentRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -69,60 +76,65 @@ export default function Philosophy() {
   const backgroundX = useTransform(scrollYProgress, [0, 1], ["0%", "-100%"]);
 
   const backgroundGradient = `linear-gradient(to right, 
-    #D3D3D3 0%,                 /* 1. Chaos (Pale Gray) */
-    white 50%,                 /* 2. Team (White) */
-    #facc15 100%                 /* 3. Clarity (Yellow) */
+    #D3D3D3 0%,
+    ${isDarkMode ? "black" : "white"} 50%,
+    #facc15 100%
   )`;
 
-  // --- 5. GSAP LAYOUT EFFECT ---
   useLayoutEffect(() => {
-    // --- THIS IS THE FIX ---
-    // We add a short delay to wait for App.tsx to load GSAP
-    // and for the browser to paint the scrollable elements.
-    const timeout = setTimeout(() => {
-      if (window.gsap && window.ScrollTrigger) {
-        const gsap = window.gsap;
-        const horizontalScroll = scrollRef.current;
-        const pinElement = pinRef.current;
-        const componentElement = componentRef.current;
-        if (!horizontalScroll || !pinElement || !componentElement) return;
+    if (gsapLoaded && window.gsap && window.ScrollTrigger) {
+      const gsap = window.gsap;
+      const horizontalScroll = scrollRef.current;
+      const pinElement = pinRef.current;
+      const componentElement = componentRef.current;
+      if (!horizontalScroll || !pinElement || !componentElement) return;
 
-        const scrollWidth = horizontalScroll.scrollWidth - window.innerWidth;
+      const scrollWidth = horizontalScroll.scrollWidth - window.innerWidth;
 
-        let ctx = gsap.context(() => {
-          const tl = gsap.timeline({
-            scrollTrigger: {
-              trigger: componentElement,
-              pin: pinElement,
-              scrub: 1,
-              start: "top top",
-              end: `+=${scrollWidth}`,
-            },
-          });
+      // --- 1. ADD EXTRA SCROLL DURATION FOR THE FADE-OUT ---
+      const fadeOutDuration = window.innerHeight; // 100vh
 
-          tl.to(horizontalScroll, {
-            x: -scrollWidth,
-            ease: "none",
-          });
-        }, componentRef);
+      let ctx = gsap.context(() => {
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: componentElement,
+            pin: pinElement,
+            scrub: 1,
+            start: "top top",
+            // --- 2. ADD THE DURATION TO THE 'end' ---
+            end: `+=${scrollWidth + fadeOutDuration}`,
+          },
+        });
 
-        return () => ctx.revert();
-      }
-    }, 100); // 100ms delay
+        // --- 3. FIRST, do the horizontal scroll ---
+        tl.to(horizontalScroll, {
+          x: -scrollWidth,
+          ease: "none",
+        });
 
-    return () => clearTimeout(timeout);
-  }, []); // Empty array is correct, timeout handles the race condition
+        // --- 4. NEW: THEN, fade out the *entire* pinned section ---
+        tl.to(pinElement, {
+          scale: 0.9, // Gently shrink the section
+          opacity: 0, // Fade it out
+          ease: "power2.inOut",
+        });
+      }, componentRef);
+
+      return () => ctx.revert();
+    }
+  }, [gsapLoaded, isDarkMode]);
 
   return (
     <section id="philosophy" ref={componentRef} className="relative">
-      <div ref={pinRef} className={`relative h-screen w-full overflow-hidden`}>
-        <motion.div
-          className="absolute inset-0 z-0"
-          style={{
-            background: backgroundGradient,
-            backgroundSize: "200% 100%",
-            x: backgroundX,
-          }}
+      <div
+        ref={pinRef}
+        className={`relative h-screen w-full overflow-hidden`}
+        // Set initial scale and opacity for the fade-out
+        style={{ scale: 1, opacity: 1 }}
+      >
+        <AnimatedWaterBackground
+          backgroundX={backgroundX}
+          gradient={backgroundGradient}
         />
 
         <div
@@ -132,7 +144,9 @@ export default function Philosophy() {
           {/* --- CHAPTER 1: THE CHAOS --- */}
           <div className="relative flex h-screen w-screen items-center justify-center p-12">
             <h2
-              className={`text-center text-7xl md:text-9xl font-black uppercase text-gray-500`}
+              className={`text-center text-7xl md:text-9xl font-black uppercase ${
+                isDarkMode ? "text-gray-700" : "text-gray-500"
+              }`}
             >
               DROWNING
               <br />
@@ -161,7 +175,9 @@ export default function Philosophy() {
             className="flex h-screen w-auto items-center justify-center gap-8 p-12"
           >
             <h2
-              className={`text-center text-6xl md:text-8xl font-black uppercase text-black mr-16`}
+              className={`text-center text-6xl md:text-8xl font-black uppercase ${
+                isDarkMode ? "text-white" : "text-black"
+              } mr-16`}
             >
               MEET THE
               <br />
@@ -174,7 +190,11 @@ export default function Philosophy() {
             {team.map((member, index) => (
               <motion.div
                 key={member.name}
-                className={`text-center p-6 border-4 border-black bg-white/50 backdrop-blur-sm w-80 flex-shrink-0`}
+                className={`text-center p-6 border-4 ${
+                  isDarkMode ? "border-white" : "border-black"
+                } ${
+                  isDarkMode ? "bg-black/50" : "bg-white/50"
+                } backdrop-blur-sm w-80 flex-shrink-0`}
                 initial={{ opacity: 0, y: 50 }}
                 animate={
                   isTeamInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }
@@ -184,18 +204,28 @@ export default function Philosophy() {
                 <img
                   src={member.img}
                   alt={member.name}
-                  className={`w-32 h-32 rounded-full mx-auto mb-4 bg-gray-300 border-4 border-black object-cover`}
+                  className={`w-32 h-32 rounded-full mx-auto mb-4 bg-gray-300 border-4 ${
+                    isDarkMode ? "border-white" : "border-black"
+                  } object-cover`}
                   onError={(e) =>
                     (e.currentTarget.style.backgroundColor = "#facc15")
                   }
                 />
-                <h3 className={`text-2xl font-black uppercase text-black`}>
+                <h3
+                  className={`text-2xl font-black uppercase ${
+                    isDarkMode ? "text-white" : "text-black"
+                  }`}
+                >
                   {member.name}
                 </h3>
                 <h4 className="text-brand-yellow font-bold uppercase text-sm mb-3">
                   {member.title}
                 </h4>
-                <p className={`font-medium italic text-gray-700`}>
+                <p
+                  className={`font-medium italic ${
+                    isDarkMode ? "text-gray-300" : "text-gray-700"
+                  }`}
+                >
                   "{member.pun}"
                 </p>
               </motion.div>
@@ -205,7 +235,9 @@ export default function Philosophy() {
           {/* --- CHAPTER 3: THE CLARITY --- */}
           <div className="relative flex h-screen w-screen items-center justify-center p-12">
             <h2
-              className={`text-center text-7xl md:text-9xl font-black uppercase text-black`}
+              className={`text-center text-7xl md:text-9xl font-black uppercase ${
+                isDarkMode ? "text-black" : "text-black"
+              }`}
             >
               WE RETAIN
               <br />

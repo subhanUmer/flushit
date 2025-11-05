@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-// --- REMOVED useTheme ---
+// import { useTheme } from "../App"; // Removed
 
 export default function CustomCursor() {
   const [mousePosition, setMousePosition] = useState({ x: -100, y: -100 });
   const [isHoveringLink, setIsHoveringLink] = useState(false);
-  // --- REMOVED useTheme hook and isDarkMode variable ---
 
   useEffect(() => {
     const mouseMove = (e: MouseEvent) => {
@@ -67,14 +66,12 @@ export default function CustomCursor() {
 
   return (
     <>
-      {/* The trailing ring */}
       <motion.div
         className="fixed w-10 h-10 border-2 rounded-full z-[9999] pointer-events-none hidden md:block"
         variants={ringVariants}
         animate={isHoveringLink ? "hovering" : "default"}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
       />
-      {/* The main dot */}
       <motion.div
         className="fixed w-4 h-4 rounded-full z-[9999] pointer-events-none hidden md:block"
         variants={cursorVariants}

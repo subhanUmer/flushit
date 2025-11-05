@@ -1,15 +1,20 @@
 import { Mail, Phone, MapPin } from "lucide-react";
 import { useState, useRef, useLayoutEffect } from "react";
 import { motion, useInView } from "framer-motion";
-// --- REMOVED useTheme ---
+// import { useTheme } from "../App"; // Removed
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-export default function Contact() {
+// Define props type
+type Props = {
+  isGsapLoaded: boolean;
+};
+
+// Accept the prop
+export default function Contact({ isGsapLoaded }: Props) {
   const containerRef = useRef(null);
-  // --- REMOVED useTheme and isDarkMode ---
   const isInView = useInView(containerRef, { once: false, amount: 0.2 });
 
   const contentRef = useRef(null);
@@ -28,6 +33,10 @@ export default function Contact() {
   };
 
   useLayoutEffect(() => {
+    // --- THIS IS THE FIX ---
+    // Only run if GSAP is loaded
+    if (!isGsapLoaded) return;
+
     const content = contentRef.current;
     const section = containerRef.current;
     if (!content || !section) return;
@@ -48,21 +57,18 @@ export default function Contact() {
     }, containerRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [isGsapLoaded]); // <-- Add isGsapLoaded to dependency array
 
   return (
     <section
       id="contact"
       ref={containerRef}
-      // --- MODIFIED: Hard-coded to light ---
       className={`py-32 px-6 relative overflow-hidden bg-white`}
     >
-      {/* --- Dot Grid Background --- */}
       <div
         className="absolute inset-0 z-0 bg-dot-pattern"
         style={{
           backgroundSize: "20px 20px",
-          // --- MODIFIED: Hard-coded to light ---
           "--dot-color": "var(--dot-color-light)",
           opacity: 0.5,
         }}
@@ -96,7 +102,6 @@ export default function Contact() {
 
             <div className="space-y-6 mb-12">
               <motion.div
-                // --- MODIFIED: Hard-coded to light ---
                 className={`flex items-start gap-4 bg-black p-6 border-4 border-white`}
                 whileHover={{
                   x: 10,
@@ -166,10 +171,7 @@ export default function Contact() {
             </div>
           </motion.div>
 
-          <motion.div
-            // --- MODIFIED: Hard-coded to light ---
-            className={`bg-black p-8 border-4 border-white`}
-          >
+          <motion.div className={`bg-black p-8 border-4 border-white`}>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label
@@ -254,7 +256,6 @@ export default function Contact() {
                   boxShadow: "8px 8px 0px 0px rgba(255,255,255,1)",
                 }}
                 whileTap={{ scale: 0.95 }}
-                // --- MODIFIED: Hard-coded to light ---
                 className={`w-full bg-brand-yellow hover:bg-yellow-300 text-black px-8 py-4 font-black text-xl uppercase transition-all border-4 border-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)]`}
               >
                 SEND MESSAGE
