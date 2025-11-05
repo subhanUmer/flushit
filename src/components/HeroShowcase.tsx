@@ -1,11 +1,82 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Fragment } from "react";
 import { ArrowRight, Play, Pause, Volume2, VolumeX } from "lucide-react";
-// import { useTheme } from "../App"; // Removed
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { motion } from "framer-motion";
 
 gsap.registerPlugin(ScrollTrigger);
+
+// ... (AnimatedTextWord and AnimatedTextCharacter components are unchanged) ...
+type AnimatedTextWordProps = {
+  text: string;
+  className?: string;
+};
+const AnimatedTextWord = ({ text, className }: AnimatedTextWordProps) => {
+  const words = text.split(" ");
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.04 } },
+  };
+  const wordVariants = {
+    hidden: { y: "100%" },
+    visible: { y: "0%", transition: { duration: 0.5, ease: "easeOut" } },
+  };
+  return (
+    <motion.p
+      className={className}
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.5 }}
+    >
+      {words.map((word, index) => (
+        <Fragment key={index}>
+          <span className="inline-block overflow-hidden pb-1">
+            <motion.span className="inline-block" variants={wordVariants}>
+              {word}
+            </motion.span>
+          </span>
+          {"\u00A0"}
+        </Fragment>
+      ))}
+    </motion.p>
+  );
+};
+type AnimatedTextCharacterProps = {
+  text: string;
+  className?: string;
+};
+const AnimatedTextCharacter = ({
+  text,
+  className,
+}: AnimatedTextCharacterProps) => {
+  const letters = Array.from(text);
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.03 } },
+  };
+  const charVariants = {
+    hidden: { y: "100%" },
+    visible: { y: "0%", transition: { duration: 0.4, ease: "easeOut" } },
+  };
+  return (
+    <motion.h1
+      className={className}
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.5 }}
+    >
+      {letters.map((char, index) => (
+        <span key={index} className="inline-block overflow-hidden">
+          <motion.span className="inline-block" variants={charVariants}>
+            {char === " " ? "\u00A0" : char}
+          </motion.span>
+        </span>
+      ))}
+    </motion.h1>
+  );
+};
 
 // Define props type
 type Props = {
@@ -30,9 +101,7 @@ const particleImagePaths = [
   "/media/Oraan-case-study-2.png",
 ];
 
-// Accept the prop
 export default function HeroShowcase({ isGsapLoaded }: Props) {
-  // All theme logic removed
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const componentRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -44,9 +113,9 @@ export default function HeroShowcase({ isGsapLoaded }: Props) {
 
   const condenseProgress = useRef({ value: 0 });
 
-  // --- 1. Canvas Animation Logic (The Tornado) ---
+  // --- Canvas Animation Logic (Unchanged) ---
   useEffect(() => {
-    // ... (This entire useEffect is unchanged as it doesn't use GSAP) ...
+    // ... (This logic is correct and unchanged) ...
     const canvas = canvasRef.current;
     if (!canvas) return;
     const context = canvas.getContext("2d");
@@ -310,12 +379,10 @@ export default function HeroShowcase({ isGsapLoaded }: Props) {
       particles.length = 0;
       particleImages.length = 0;
     };
-  }, []); // This useEffect is fine, no GSAP.
+  }, []);
 
-  // --- 2. GSAP "Shrink to Reveal" Animation ---
+  // --- 2. GSAP "Shrink to Reveal" Animation (FIXED) ---
   useEffect(() => {
-    // --- THIS IS THE FIX ---
-    // Only run this effect if isGsapLoaded is true
     if (!isGsapLoaded) return;
 
     const component = componentRef.current;
@@ -339,12 +406,14 @@ export default function HeroShowcase({ isGsapLoaded }: Props) {
         scrollTrigger: {
           trigger: component,
           start: "top top",
-          end: "+=300vh",
+          end: "+=500vh",
           scrub: 1,
           pin: true,
         },
       });
 
+      // --- THIS IS THE FIX ---
+      // Re-added the animation for the text content
       tl.to(
         content,
         {
@@ -353,8 +422,10 @@ export default function HeroShowcase({ isGsapLoaded }: Props) {
           duration: 0.5,
           ease: "power2.in",
         },
-        0
+        0 // Start at the beginning of the timeline
       );
+      // --- END FIX ---
+
       tl.to(
         condenseProgress.current,
         {
@@ -378,10 +449,11 @@ export default function HeroShowcase({ isGsapLoaded }: Props) {
     }, component);
 
     return () => ctx.revert();
-  }, [isGsapLoaded]); // <-- Add isGsapLoaded to dependency array
+  }, [isGsapLoaded]);
 
   // --- 3. Video Player Logic (Unchanged) ---
   const togglePlay = () => {
+    // ... (unchanged) ...
     if (videoRef.current) {
       if (isPlaying) {
         videoRef.current.pause();
@@ -392,22 +464,22 @@ export default function HeroShowcase({ isGsapLoaded }: Props) {
       }
     }
   };
-  // ... (rest of video logic is unchanged) ...
   const toggleMute = () => {
+    // ... (unchanged) ...
     if (videoRef.current) {
       videoRef.current.muted = !isMuted;
       setIsMuted(!isMuted);
     }
   };
-
   const onVideoError = (e: any) => {
+    // ... (unchanged) ...
     console.error(
       "Video Error: Failed to load video. Check path and `public` folder.",
       e.target.error.message
     );
   };
-
   useEffect(() => {
+    // ... (unchanged) ...
     if (videoRef.current) {
       setIsPlaying(true);
       videoRef.current.play().catch((error) => {
@@ -439,8 +511,7 @@ export default function HeroShowcase({ isGsapLoaded }: Props) {
             />
             Your browser does not support the video tag.
           </video>
-
-          {/* Video Controls */}
+          {/* Video Controls (unchanged) */}
           <div className="absolute inset-0 z-50 flex items-center justify-center group">
             {!isPlaying && (
               <motion.button
@@ -520,25 +591,22 @@ export default function HeroShowcase({ isGsapLoaded }: Props) {
         >
           <div className="max-w-7xl mx-auto">
             <div>
-              <h1 className="text-6xl md:text-8xl lg:text-9xl font-black mb-8 leading-none uppercase">
-                <span className={`block text-black`}>FLUSH</span>
-                <span className="block bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 bg-clip-text text-transparent">
-                  THE BAD
-                </span>
-              </h1>
+              {/* --- Animations & Highlighting (Unchanged) --- */}
+              <AnimatedTextCharacter
+                text="Fueling business growth in Pakistan"
+                className="text-5xl md:text-7xl lg:text-8xl font-black leading-tight uppercase text-black"
+              />
+              <AnimatedTextCharacter
+                text="with insight-led and short-form content."
+                className="text-5xl md:text-7xl lg:text-8xl font-black leading-tight uppercase text-black mb-8"
+              />
               <div className="mb-12">
-                <p className={`text-2xl md:text-4xl font-bold text-black mb-4`}>
-                  WE DON'T BRAINSTORM.
-                </p>
-                <p className="text-3xl md:text-5xl font-black text-brand-yellow">
-                  WE DETOX.
-                </p>
+                <AnimatedTextWord
+                  text="Next-generation marketing studio"
+                  className="text-3xl md:text-5xl font-black text-brand-yellow uppercase"
+                />
               </div>
-              <p
-                className={`text-xl md:text-2xl text-gray-700 mb-12 max-w-4xl mx-auto`}
-              >
-                Stop swimming in bad ideas. Start making a splash.
-              </p>
+
               <div className="flex flex-col sm:flex-row gap-6 items-center justify-center">
                 <button
                   onClick={() =>
@@ -548,11 +616,7 @@ export default function HeroShowcase({ isGsapLoaded }: Props) {
                   }
                   className="group bg-brand-yellow hover:bg-yellow-300 text-black px-12 py-6 rounded-none font-black text-xl transition-all flex items-center gap-3 uppercase border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]"
                 >
-                  CLEAR THE PIPE
-                  <ArrowRight
-                    className="group-hover:translate-x-2 transition-transform"
-                    size={24}
-                  />
+                  LET'S TALK
                 </button>
               </div>
             </div>

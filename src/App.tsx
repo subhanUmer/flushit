@@ -9,17 +9,15 @@ import HeroShowcase from "./components/HeroShowcase";
 import CustomCursor from "./components/CustomCursor";
 import Footer from "./components/Footer";
 
-// All ThemeContext logic has been removed.
-
 function App() {
   const { scrollYProgress } = useScroll();
-  // --- 1. ADD STATE TO TRACK IF GSAP IS LOADED ---
   const [isGsapLoaded, setIsGsapLoaded] = useState(false);
 
   useEffect(() => {
+    // Check if scripts are already loaded
     if (window.gsap && window.ScrollTrigger) {
       window.gsap.registerPlugin(window.ScrollTrigger);
-      setIsGsapLoaded(true); // Set state if already loaded
+      setIsGsapLoaded(true);
       return;
     }
 
@@ -42,7 +40,7 @@ function App() {
       scrollTriggerScript.onload = () => {
         if (window.gsap && window.ScrollTrigger) {
           window.gsap.registerPlugin(window.ScrollTrigger);
-          setIsGsapLoaded(true); // <-- 2. SET STATE ONCE LOADED
+          setIsGsapLoaded(true); // Set state once loaded
         } else {
           console.error("GSAP or ScrollTrigger failed to load.");
         }
@@ -60,7 +58,6 @@ function App() {
     };
   }, []);
 
-  // Hard-coded to light theme
   const backgroundColor = useTransform(
     scrollYProgress,
     [0, 0.15, 0.3, 0.5],
@@ -87,7 +84,6 @@ function App() {
 
       <div className="relative z-10">
         <Navigation />
-        {/* --- 3. PASS PROP TO ALL COMPONENTS THAT USE GSAP --- */}
         <HeroShowcase isGsapLoaded={isGsapLoaded} />
         <Philosophy isGsapLoaded={isGsapLoaded} />
         <Services isGsapLoaded={isGsapLoaded} />

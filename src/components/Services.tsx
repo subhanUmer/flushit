@@ -1,102 +1,145 @@
 import {
   Video,
-  Camera,
-  Palette,
-  Sparkles,
-  TrendingUp,
-  Play,
+  Edit3, // Using Edit3 for storytelling
+  Users, // Using Users for UGC
 } from "lucide-react";
 import { motion, useInView } from "framer-motion";
-import { useRef, useState, useLayoutEffect } from "react";
-// import { useTheme } from "../App"; // Removed
+import { useRef, useState, useLayoutEffect, Fragment } from "react";
 import { DoodleSquiggle, DoodleStar } from "./Artifacts";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
+// ... (AnimatedTextWord and AnimatedTextCharacter components are unchanged) ...
+type AnimatedTextWordProps = {
+  text: string;
+  className?: string;
+  highlightWords?: string[];
+  animate?: "visible" | "hidden"; // Control for hover
+};
+const AnimatedTextWord = ({
+  text,
+  className,
+  highlightWords = [],
+  animate,
+}: AnimatedTextWordProps) => {
+  const words = text.split(" ");
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.04 } },
+  };
+  const wordVariants = {
+    hidden: { y: "100%" },
+    visible: { y: "0%", transition: { duration: 0.5, ease: "easeOut" } },
+  };
+  return (
+    <motion.p
+      className={className}
+      variants={containerVariants}
+      initial="hidden"
+      whileInView={!animate ? "visible" : "hidden"}
+      animate={animate} // Manually control animation
+      viewport={{ once: true, amount: 0.3 }}
+    >
+      {words.map((word, index) => {
+        const isHighlighted = highlightWords.some((hw) => word.includes(hw));
+        return (
+          <Fragment key={index}>
+            <span className="inline-block overflow-hidden pb-1">
+              <motion.span
+                className={`inline-block ${
+                  isHighlighted ? "text-brand-yellow" : ""
+                }`}
+                variants={wordVariants}
+              >
+                {word}
+              </motion.span>
+            </span>
+            {"\u00A0"}
+          </Fragment>
+        );
+      })}
+    </motion.p>
+  );
+};
+type AnimatedTextCharacterProps = {
+  text: string;
+  className?: string;
+};
+const AnimatedTextCharacter = ({
+  text,
+  className,
+}: AnimatedTextCharacterProps) => {
+  const letters = Array.from(text);
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.03 } },
+  };
+  const charVariants = {
+    hidden: { y: "100%" },
+    visible: { y: "0%", transition: { duration: 0.4, ease: "easeOut" } },
+  };
+  return (
+    <motion.h2
+      className={className}
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.5 }}
+    >
+      {letters.map((char, index) => (
+        <span key={index} className="inline-block overflow-hidden">
+          <motion.span className="inline-block" variants={charVariants}>
+            {char === " " ? "\u00A0" : char}
+          </motion.span>
+        </span>
+      ))}
+    </motion.h2>
+  );
+};
+
 // Define props type
 type Props = {
   isGsapLoaded: boolean;
 };
 
-// Accept the prop
+// ... (services data is unchanged) ...
+const services = [
+  {
+    icon: Video,
+    title: "Video Production",
+    description: "Scroll-stopping visuals, crafted in-house.",
+    highlights: ["Scroll-stopping"],
+  },
+  {
+    icon: Edit3,
+    title: "Content Creation & Storytelling",
+    description:
+      "Not just pretty posts—compelling stories made for your audience and channel.",
+    highlights: ["compelling", "stories"],
+  },
+  {
+    icon: Users,
+    title: "UGC Style Content",
+    description: "We build brand advocates.",
+    highlights: ["brand", "advocates."],
+  },
+];
+
 export default function Services({ isGsapLoaded }: Props) {
   const containerRef = useRef(null);
-  const isInView = useInView(containerRef, { once: false, amount: 0.2 });
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  // All theme logic removed
-
+  const isInView = useInView(containerRef, { once: true, amount: 0.2 });
   const contentRef = useRef(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  const services = [
-    // ... (services array is unchanged)
-    {
-      icon: Video,
-      title: "CONTENT PRODUCTION",
-      bad: "Generic Ads",
-      good: "Stories People Watch",
-      description: "Organic-style content that doesn't feel like an ad.",
-      features: ["Short Films", "UGC Content", "Brand Videos", "Social Media"],
-      bgColor: "bg-brand-yellow",
-      textColor: "text-black",
-    },
-    {
-      icon: Camera,
-      title: "EVENT COVERAGE",
-      bad: "Boring B-Roll",
-      good: "Captured Energy",
-      description: "Every moment that matters, documented with style.",
-      features: [
-        "Live Coverage",
-        "Highlight Reels",
-        "Behind Scenes",
-        "Documentary",
-      ],
-      bgColor: "bg-brand-yellow",
-      textColor: "text-black",
-    },
-    {
-      icon: Palette,
-      title: "BRANDING & DESIGN",
-      bad: "Forgettable Logos",
-      good: "Iconic Identity",
-      description: "Build a brand that actually stands out.",
-      features: [
-        "Brand Identity",
-        "Visual Systems",
-        "Motion Graphics",
-        "Direction",
-      ],
-      bgColor: "bg-brand-yellow",
-      textColor: "text-black",
-    },
-    {
-      icon: Sparkles,
-      title: "AI EXPERIMENTATION",
-      bad: "Same Old Content",
-      good: "Future-Ready Creations",
-      description: "Pushing boundaries with cutting-edge tech.",
-      features: [
-        "AI Content",
-        "Automation",
-        "Innovation Labs",
-        "Next-Gen Solutions",
-      ],
-      bgColor: "bg-brand-yellow",
-      textColor: "text-black",
-    },
-  ];
-
+  // --- GSAP LOGIC (Unchanged) ---
   useLayoutEffect(() => {
-    // --- THIS IS THE FIX ---
-    // Only run if GSAP is loaded
+    // ... (unchanged) ...
     if (!isGsapLoaded) return;
-
     const content = contentRef.current;
     const section = containerRef.current;
     if (!content || !section) return;
-
     let ctx = gsap.context(() => {
       gsap.set(content, { opacity: 0, y: 100 });
       gsap.to(content, {
@@ -111,9 +154,8 @@ export default function Services({ isGsapLoaded }: Props) {
         },
       });
     }, containerRef);
-
     return () => ctx.revert();
-  }, [isGsapLoaded]); // <-- Add isGsapLoaded to dependency array
+  }, [isGsapLoaded]);
 
   return (
     <section
@@ -121,7 +163,7 @@ export default function Services({ isGsapLoaded }: Props) {
       ref={containerRef}
       className={`py-32 px-6 relative bg-white overflow-hidden`}
     >
-      {/* ... (Background parallax elements are unchanged) ... */}
+      {/* --- BACKGROUND ARTIFACTS (Unchanged) --- */}
       <motion.div
         className="absolute top-1/4 left-12 w-24 h-24 opacity-20 z-0"
         animate={{ y: [-10, 10], rotate: [0, -15] }}
@@ -151,7 +193,6 @@ export default function Services({ isGsapLoaded }: Props) {
         animate={{ x: [0, -80, 0], y: [0, 80, 0], rotate: [0, -180, -360] }}
         transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
       />
-
       <motion.div
         className="absolute top-0 left-0 w-full h-3 bg-brand-yellow z-10"
         initial={{ scaleX: 0 }}
@@ -162,6 +203,7 @@ export default function Services({ isGsapLoaded }: Props) {
 
       <div ref={contentRef} className="max-w-7xl mx-auto relative z-10">
         <div className="text-center mb-20 overflow-hidden">
+          {/* ... (Marquee H2 elements are unchanged) ... */}
           <div className="relative flex whitespace-nowrap overflow-hidden">
             <motion.div
               className="flex animate-marquee will-change-transform"
@@ -172,14 +214,12 @@ export default function Services({ isGsapLoaded }: Props) {
               <h2
                 className={`text-6xl md:text-8xl lg:text-9xl font-black uppercase inline-block mx-4 text-black`}
               >
-                THE WASH CYCLE
-                <span className="text-brand-yellow">.</span>
+                THE WASH CYCLE <span className="text-brand-yellow">.</span>
               </h2>
               <h2
                 className={`text-6xl md:text-8xl lg:text-9xl font-black uppercase inline-block mx-4 text-black`}
               >
-                THE WASH CYCLE
-                <span className="text-brand-yellow">.</span>
+                THE WASH CYCLE <span className="text-brand-yellow">.</span>
               </h2>
             </motion.div>
             <motion.div
@@ -191,130 +231,94 @@ export default function Services({ isGsapLoaded }: Props) {
               <h2
                 className={`text-6xl md:text-8xl lg:text-9xl font-black uppercase inline-block mx-4 text-black`}
               >
-                THE WASH CYCLE
-                <span className="text-brand-yellow">.</span>
+                THE WASH CYCLE <span className="text-brand-yellow">.</span>
               </h2>
               <h2
                 className={`text-6xl md:text-8xl lg:text-9xl font-black uppercase inline-block mx-4 text-black`}
               >
-                THE WASH CYCLE
-                <span className="text-brand-yellow">.</span>
+                THE WASH CYCLE <span className="text-brand-yellow">.</span>
               </h2>
             </motion.div>
           </div>
-          <motion.p className="text-2xl md:text-3xl font-bold max-w-3xl mx-auto mt-12">
-            <span className="text-red-500 line-through">IDENTIFY THE CLOG</span>
-            {" → "}
-            <span className="text-yellow-500">AGITATE</span>
-            {" → "}
-            <span className="text-green-500">CLARIFY</span>
-          </motion.p>
+
+          <AnimatedTextCharacter
+            text="Our Services"
+            className="text-5xl md:text-7xl font-black uppercase text-black mt-12"
+          />
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-5xl mx-auto">
+        {/* --- UPDATED SERVICES LIST WITH WATER HOVER --- */}
+        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {services.map((service, index) => (
             <motion.div
               key={index}
-              className={`relative bg-gray-100 p-6 border-2 border-gray-200 rounded-lg overflow-hidden group cursor-pointer`}
+              className={`relative bg-gray-100 p-8 border-4 border-black overflow-hidden cursor-pointer`}
               onHoverStart={() => setHoveredIndex(index)}
               onHoverEnd={() => setHoveredIndex(null)}
-              whileHover={{ scale: 1.05, rotate: 2 }}
             >
-              <motion.div
-                className={`absolute -top-4 -left-4 w-24 h-24 ${service.bgColor} rounded-full blur-2xl transition-all duration-300`}
-                animate={{
-                  opacity: hoveredIndex === index ? 0.5 : 0.2,
-                  scale: hoveredIndex === index ? 1.2 : 1,
-                }}
-              />
               <div className="relative z-10">
-                <service.icon
-                  className={`mb-4 transition-colors ${
-                    hoveredIndex === index ? "text-black" : "text-brand-yellow"
-                  }`}
-                  size={32}
-                  strokeWidth={3}
-                />
-                <h3
-                  className={`text-xl font-black mb-2 transition-colors ${
-                    hoveredIndex === index ? "text-black" : "text-black"
-                  }`}
+                <motion.div
+                  animate={{
+                    color: hoveredIndex === index ? "#000000" : "#facc15",
+                  }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <service.icon className={`mb-4`} size={40} strokeWidth={3} />
+                </motion.div>
+
+                {/* --- THIS IS THE FIX (Text Size) --- */}
+                <motion.h3
+                  animate={{
+                    color: hoveredIndex === index ? "#000000" : "#000000",
+                  }}
+                  transition={{ duration: 0.3 }}
+                  className={`text-2xl font-black mb-3 text-black uppercase`} // Changed to 2xl
                 >
                   {service.title}
-                </h3>
-                <motion.div className="mb-2 h-12">
-                  <motion.p
-                    className="text-red-400 line-through font-bold text-xs mb-1"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{
-                      opacity: hoveredIndex === index ? 1 : 0,
-                      height: hoveredIndex === index ? "auto" : 0,
-                    }}
-                  >
-                    {service.bad}
-                  </motion.p>
-                  <motion.p
-                    className="text-black font-bold text-sm"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{
-                      opacity: hoveredIndex === index ? 1 : 0,
-                      height: hoveredIndex === index ? "auto" : 0,
-                    }}
-                  >
-                    ↓ {service.good}
-                  </motion.p>
-                </motion.div>
-                <p
-                  className={`mb-3 font-semibold text-sm transition-colors ${
-                    hoveredIndex === index ? "text-gray-800" : "text-gray-600"
-                  }`}
+                </motion.h3>
+                <motion.p
+                  animate={{
+                    color: hoveredIndex === index ? "#333333" : "#4B5563",
+                  }}
+                  transition={{ duration: 0.3 }}
+                  className="text-base font-medium" // Changed to text-base
                 >
                   {service.description}
-                </p>
-                <ul className="space-y-1 font-bold text-xs">
-                  {service.features.map((feature, i) => (
-                    <motion.li
-                      key={i}
-                      className={`flex items-center gap-1 transition-colors ${
-                        hoveredIndex === index ? "text-black" : "text-gray-700"
-                      }`}
-                    >
-                      <span
-                        className={`transition-colors ${
-                          hoveredIndex === index
-                            ? "text-black"
-                            : "text-brand-yellow"
-                        }`}
-                      >
-                        ▸
-                      </span>
-                      {feature}
-                    </motion.li>
-                  ))}
-                </ul>
+                </motion.p>
               </div>
+
+              {/* --- THIS IS THE FIX (Water Effect) --- */}
               <motion.div
-                className="absolute inset-0 bg-brand-yellow z-0"
-                initial={{ y: "100%" }}
-                animate={{ y: hoveredIndex === index ? "0%" : "100%" }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="absolute bottom-0 left-0 right-0 w-full bg-brand-yellow z-0"
+                style={{
+                  filter: "url(#water-flush)",
+                  scale: 1.2, // Increased scale
+                }}
+                initial={{ height: "0%", opacity: 0 }}
+                animate={{
+                  height: hoveredIndex === index ? "100%" : "0%",
+                  opacity: hoveredIndex === index ? 1 : 0,
+                }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
               />
             </motion.div>
           ))}
         </div>
+        {/* --- END UPDATED SERVICES LIST --- */}
 
+        {/* --- BUTTON (Unchanged) --- */}
         <motion.div className="mt-20 text-center">
           <motion.button
             whileHover={{ scale: 1.05, rotate: [0, -1, 1, 0] }}
             whileTap={{ scale: 0.95 }}
             onClick={() =>
               document
-                .getElementById("contact")
+                .getElementById("work")
                 ?.scrollIntoView({ behavior: "smooth" })
             }
             className="bg-brand-yellow text-black px-12 py-6 font-black text-xl uppercase border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all"
           >
-            START YOUR PROJECT
+            SEE OUR WORK
           </motion.button>
         </motion.div>
       </div>
