@@ -1,153 +1,233 @@
-import { motion, useInView, useScroll, useTransform } from 'framer-motion';
-import { useRef } from 'react';
-import { useTheme } from '../App';
+import { useRef, useLayoutEffect } from "react";
+import { motion, useInView, useScroll, useTransform } from "framer-motion";
+// We don't need useTheme anymore
+import gsap from "gsap"; // Import GSAP
+import { ScrollTrigger } from "gsap/ScrollTrigger"; // Import ScrollTrigger
 
+gsap.registerPlugin(ScrollTrigger); // Register the plugin
+
+// --- 1. DATA FOR "FLUSH MASTERS" ---
+const team = [
+  {
+    name: "Jane 'Drain' Doe",
+    title: "Chief Flush Officer",
+    pun: "Drains the mundane, daily.",
+    img: "https://source.unsplash.com/400x400/?portrait,woman,professional",
+  },
+  {
+    name: "Mike 'Plunger' Smith",
+    title: "Head of Agitation",
+    pun: "Unclogs creative pipelines.",
+    img: "https://source.unsplash.com/400x400/?portrait,man,professional",
+  },
+  {
+    name: "Alex 'Swirl' Johnson",
+    title: "Director of Clarity",
+    pun: "Finds the signal in the noise.",
+    img: "https://source.unsplash.com/400x400/?portrait,person,professional",
+  },
+];
+
+// --- 2. DATA FOR "IDEA CLOUDS" ---
+const badIdeas = [
+  "CLUTTER",
+  "NOISE",
+  "BORING",
+  "GENERIC",
+  "FORGETTABLE",
+  "SAFE",
+  "MUNDANE",
+  "CLOGGED",
+  "STUCK",
+];
+const goodIdeas = [
+  "IMPACT",
+  "CLARITY",
+  "STORIES",
+  "ENERGY",
+  "ICONIC",
+  "BOLD",
+  "STICKY",
+  "FLUSHED",
+  "FLOW",
+];
+
+// --- 3. REBUILT HORIZONTAL SCROLL COMPONENT ---
 export default function Philosophy() {
-  const containerRef = useRef(null);
-  const { isDarkMode } = useTheme();
-  const isInView = useInView(containerRef, { once: false, amount: 0.3 });
+  const componentRef = useRef<HTMLDivElement>(null);
+  const pinRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const teamRef = useRef(null);
+  const isTeamInView = useInView(teamRef, { once: false, amount: 0.2 });
 
   const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start end', 'end start'],
+    target: componentRef,
+    offset: ["start start", "end end"],
   });
 
-  const rotateX = useTransform(scrollYProgress, [0, 0.5, 1], [15, 0, -15]);
+  const backgroundX = useTransform(scrollYProgress, [0, 1], ["0%", "-100%"]);
+
+  const backgroundGradient = `linear-gradient(to right, 
+    #D3D3D3 0%,                 /* 1. Chaos (Pale Gray) */
+    white 50%,                 /* 2. Team (White) */
+    #facc15 100%                 /* 3. Clarity (Yellow) */
+  )`;
+
+  // --- 5. GSAP LAYOUT EFFECT ---
+  useLayoutEffect(() => {
+    // --- THIS IS THE FIX ---
+    // We add a short delay to wait for App.tsx to load GSAP
+    // and for the browser to paint the scrollable elements.
+    const timeout = setTimeout(() => {
+      if (window.gsap && window.ScrollTrigger) {
+        const gsap = window.gsap;
+        const horizontalScroll = scrollRef.current;
+        const pinElement = pinRef.current;
+        const componentElement = componentRef.current;
+        if (!horizontalScroll || !pinElement || !componentElement) return;
+
+        const scrollWidth = horizontalScroll.scrollWidth - window.innerWidth;
+
+        let ctx = gsap.context(() => {
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: componentElement,
+              pin: pinElement,
+              scrub: 1,
+              start: "top top",
+              end: `+=${scrollWidth}`,
+            },
+          });
+
+          tl.to(horizontalScroll, {
+            x: -scrollWidth,
+            ease: "none",
+          });
+        }, componentRef);
+
+        return () => ctx.revert();
+      }
+    }, 100); // 100ms delay
+
+    return () => clearTimeout(timeout);
+  }, []); // Empty array is correct, timeout handles the race condition
 
   return (
-    <section
-      id="philosophy"
-      ref={containerRef}
-      className={`py-32 px-6 relative overflow-hidden ${isDarkMode ? 'bg-black' : 'bg-white'}`}
-    >
-      <div className="max-w-7xl mx-auto relative z-10">
+    <section id="philosophy" ref={componentRef} className="relative">
+      <div ref={pinRef} className={`relative h-screen w-full overflow-hidden`}>
         <motion.div
-          className="text-center mb-32"
-          initial={{ opacity: 0, y: 100 }}
-          animate={{ opacity: isInView ? 1 : 0, y: isInView ? 0 : 100 }}
-          transition={{ duration: 1 }}
+          className="absolute inset-0 z-0"
+          style={{
+            background: backgroundGradient,
+            backgroundSize: "200% 100%",
+            x: backgroundX,
+          }}
+        />
+
+        <div
+          ref={scrollRef}
+          className="absolute top-0 left-0 z-10 flex h-full w-max items-center"
         >
-          <motion.h2
-            className="text-7xl md:text-9xl font-black uppercase leading-none mb-12"
-            style={{ rotateX }}
-          >
-            <span className={`block ${isDarkMode ? 'text-white' : 'text-black'}`}>WE DON'T</span>
-            <span className={`block ${isDarkMode ? 'text-white' : 'text-black'}`}>BRAINSTORM.</span>
-            <motion.span
-              className="block text-transparent"
-              style={{
-                WebkitTextStroke: '2px #00ffff',
-                textStroke: '2px #00ffff',
-              }}
-              animate={{
-                WebkitTextStroke: ['2px #00ffff', '2px #ff00ff', '2px #00ffff'],
-              }}
-              transition={{ duration: 3, repeat: Infinity }}
+          {/* --- CHAPTER 1: THE CHAOS --- */}
+          <div className="relative flex h-screen w-screen items-center justify-center p-12">
+            <h2
+              className={`text-center text-7xl md:text-9xl font-black uppercase text-gray-500`}
             >
-              WE DETOX.
-            </motion.span>
-          </motion.h2>
+              DROWNING
+              <br />
+              IN CHAOS?
+            </h2>
+            {badIdeas.map((idea, i) => (
+              <motion.span
+                key={i}
+                className="absolute text-2xl font-black text-brand-pale-gray opacity-50"
+                style={{
+                  top: `${10 + ((i * 13) % 80)}%`,
+                  left: `${10 + ((i * 23) % 80)}%`,
+                }}
+                initial={{ scale: 0 }}
+                whileInView={{ scale: 1 }}
+                transition={{ delay: i * 0.1, duration: 0.5 }}
+              >
+                {idea}
+              </motion.span>
+            ))}
+          </div>
 
-          <motion.div
-            className="max-w-4xl mx-auto bg-yellow-400 text-black p-12 relative"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: isInView ? 1 : 0.8, opacity: isInView ? 1 : 0 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
+          {/* --- CHAPTER 2: THE FLUSH MASTERS --- */}
+          <div
+            ref={teamRef}
+            className="flex h-screen w-auto items-center justify-center gap-8 p-12"
           >
-            <motion.div
-              className="absolute -top-4 -right-4 w-24 h-24 bg-yellow-400 rounded-full"
-              animate={{
-                scale: [1, 1.2, 1],
-                rotate: [0, 180, 360],
-              }}
-              transition={{ duration: 4, repeat: Infinity }}
-            />
-            <motion.div
-              className="absolute -bottom-4 -left-4 w-32 h-32 bg-orange-400 rounded-full"
-              animate={{
-                scale: [1, 1.1, 1],
-                rotate: [0, -180, -360],
-              }}
-              transition={{ duration: 5, repeat: Infinity }}
-            />
-            <h3 className="text-4xl md:text-5xl font-black mb-6 relative z-10">
-              "FLUSH THE BAD IDEAS, MEDIOCRITY AND BORING CAMPAIGNS"
-            </h3>
-            <p className="text-2xl font-bold relative z-10">
-              THAT'S NOT JUST OUR MOTTO—IT'S OUR PROMISE.
-            </p>
-          </motion.div>
-        </motion.div>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          {[
-            {
-              title: 'BAD IDEAS',
-              status: 'DISAPPEARED',
-              color: 'from-yellow-400 to-amber-500',
-              textColor: 'text-yellow-500',
-            },
-            {
-              title: 'STRATEGY',
-              status: 'CLARIFIED',
-              color: 'from-yellow-400 to-amber-500',
-              textColor: 'text-yellow-500',
-            },
-            {
-              title: 'IMPACT',
-              status: 'DELIVERED',
-              color: 'from-yellow-400 to-amber-500',
-              textColor: 'text-yellow-500',
-            },
-          ].map((item, index) => (
-            <motion.div
-              key={index}
-              className={`relative ${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'} p-8 border-4 ${isDarkMode ? 'border-black' : 'border-white'} overflow-hidden group`}
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: isInView ? 1 : 0, y: isInView ? 0 : 50 }}
-              transition={{ delay: 0.8 + index * 0.2, duration: 0.6 }}
-              whileHover={{ scale: 1.05, rotate: index % 2 === 0 ? 2 : -2 }}
+            <h2
+              className={`text-center text-6xl md:text-8xl font-black uppercase text-black mr-16`}
             >
+              MEET THE
+              <br />
+              <span className="text-brand-yellow">
+                FLUSH
+                <br />
+                MASTERS
+              </span>
+            </h2>
+            {team.map((member, index) => (
               <motion.div
-                className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-0 group-hover:opacity-100 transition-opacity`}
-              />
-
-              <div className="relative z-10">
-                <h3 className={`text-4xl font-black mb-4 group-hover:text-white transition-colors`}>
-                  {item.title}
+                key={member.name}
+                className={`text-center p-6 border-4 border-black bg-white/50 backdrop-blur-sm w-80 flex-shrink-0`}
+                initial={{ opacity: 0, y: 50 }}
+                animate={
+                  isTeamInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }
+                }
+                transition={{ delay: index * 0.1, duration: 0.5 }}
+              >
+                <img
+                  src={member.img}
+                  alt={member.name}
+                  className={`w-32 h-32 rounded-full mx-auto mb-4 bg-gray-300 border-4 border-black object-cover`}
+                  onError={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#facc15")
+                  }
+                />
+                <h3 className={`text-2xl font-black uppercase text-black`}>
+                  {member.name}
                 </h3>
-                <div className={`h-1 ${isDarkMode ? 'bg-black' : 'bg-white'} group-hover:bg-white w-16 mb-4 transition-colors`} />
-                <p className={`text-2xl font-black ${item.textColor} group-hover:text-white transition-colors`}>
-                  {item.status}
+                <h4 className="text-brand-yellow font-bold uppercase text-sm mb-3">
+                  {member.title}
+                </h4>
+                <p className={`font-medium italic text-gray-700`}>
+                  "{member.pun}"
                 </p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+              </motion.div>
+            ))}
+          </div>
 
-        <motion.div
-          className="mt-20 text-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: isInView ? 1 : 0 }}
-          transition={{ delay: 1.5, duration: 0.8 }}
-        >
-          <p className={`text-3xl md:text-4xl font-bold ${isDarkMode ? 'text-white' : 'text-black'} mb-4`}>
-            THE ONLY THING WE LEAVE BEHIND IS
-          </p>
-          <motion.p
-            className="text-5xl md:text-7xl font-black text-yellow-400"
-            animate={{
-              textShadow: [
-                '0 0 20px rgba(250,204,21,0.5)',
-                '0 0 40px rgba(250,204,21,0.8)',
-                '0 0 20px rgba(250,204,21,0.5)',
-              ],
-            }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            IMPACT.
-          </motion.p>
-        </motion.div>
+          {/* --- CHAPTER 3: THE CLARITY --- */}
+          <div className="relative flex h-screen w-screen items-center justify-center p-12">
+            <h2
+              className={`text-center text-7xl md:text-9xl font-black uppercase text-black`}
+            >
+              WE RETAIN
+              <br />
+              BOLD IDEAS.
+            </h2>
+            {goodIdeas.map((idea, i) => (
+              <motion.span
+                key={i}
+                className="absolute text-2xl font-black text-yellow-600 opacity-70"
+                style={{
+                  top: `${10 + ((i * 13) % 80)}%`,
+                  left: `${10 + ((i * 23) % 80)}%`,
+                }}
+                initial={{ scale: 0 }}
+                whileInView={{ scale: 1 }}
+                transition={{ delay: i * 0.1, duration: 0.5 }}
+              >
+                {idea}
+              </motion.span>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );

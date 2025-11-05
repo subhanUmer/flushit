@@ -1,134 +1,132 @@
-import { useState, useEffect } from 'react';
-import { Menu, X, Sun, Moon } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useTheme } from '../App';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+// --- REMOVED useTheme ---
+import { X } from "lucide-react";
 
-interface NavigationProps {
-  isMenuOpen: boolean;
-  setIsMenuOpen: (value: boolean) => void;
-}
+// ... (Animation variants are unchanged) ...
+const overlayVariants = {
+  hidden: {
+    y: "-100%",
+    opacity: 0,
+    transition: { type: "tween", duration: 0.5, ease: "easeIn" },
+  },
+  visible: {
+    y: "0%",
+    opacity: 1,
+    transition: { type: "tween", duration: 0.4, ease: "easeOut" },
+  },
+};
+const linkContainerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      delayChildren: 0.3,
+      staggerChildren: 0.1,
+    },
+  },
+};
+const linkVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1 },
+};
 
-export default function Navigation({ isMenuOpen, setIsMenuOpen }: NavigationProps) {
-  const [scrolled, setScrolled] = useState(false);
-  const { isDarkMode, toggleTheme } = useTheme();
+const navLinks = [
+  { title: "Home", href: "#home" },
+  { title: "Philosophy", href: "#philosophy" },
+  { title: "Services", href: "#services" },
+  { title: "Work", href: "#work" },
+  { title: "Contact", href: "#contact" },
+];
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+export default function Navigation() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // --- REMOVED useTheme, isDarkMode, toggleTheme ---
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      setIsMenuOpen(false);
-    }
-  };
+  const closeMenu = () => setIsMenuOpen(false);
 
   return (
     <>
-      <motion.nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled 
-            ? 'bg-yellow-400 border-b-4 border-black' 
-            : isDarkMode 
-              ? 'bg-black/20 backdrop-blur-sm' 
-              : 'bg-white/20 backdrop-blur-sm'
-        }`}
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <motion.div
-            className={`text-3xl font-black uppercase ${
-              scrolled ? 'text-black' : isDarkMode ? 'text-white' : 'text-black'
-            }`}
-            whileHover={{ scale: 1.05 }}
-          >
-            flush<span className={scrolled ? 'text-black' : 'text-yellow-400'}>it</span>
-          </motion.div>
+      {/* HEADER BAR (Always visible) */}
+      <header className="fixed top-0 left-0 right-0 z-[1000] p-4 md:p-6">
+        <div className="flex justify-between items-center">
+          {/* Logo */}
+          <a href="#home" className="text-2xl font-display font-black z-50">
+            FLUSH<span className="text-brand-yellow">.</span>
+          </a>
 
-          <div className="lg:hidden flex items-center gap-4">
-            <motion.button
-              onClick={toggleTheme}
-              className={`${scrolled ? 'text-black' : isDarkMode ? 'text-white' : 'text-black'} hover:text-yellow-400 transition-colors`}
-              whileHover={{ scale: 1.1, rotate: 180 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              {isDarkMode ? <Sun size={24} strokeWidth={3} /> : <Moon size={24} strokeWidth={3} />}
-            </motion.button>
+          {/* Desktop Menu Controls */}
+          <div className="flex items-center gap-4">
+            {/* --- REMOVED THEME TOGGLE BUTTON --- */}
+
             <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`${scrolled ? 'text-black' : isDarkMode ? 'text-white' : 'text-black'} hover:text-yellow-400 transition-colors`}
+              onClick={() => setIsMenuOpen(true)}
+              className="relative z-50 font-display font-black text-xl p-2"
+              aria-label="Open Menu"
             >
-              {isMenuOpen ? <X size={32} strokeWidth={3} /> : <Menu size={32} strokeWidth={3} />}
+              MENU
             </button>
           </div>
-
-          <div className="hidden lg:flex items-center gap-8">
-            {['HOME', 'PHILOSOPHY', 'SERVICES', 'WORK', 'CONTACT'].map((item, index) => (
-              <motion.button
-                key={item}
-                onClick={() => scrollToSection(item.toLowerCase())}
-                className={`${
-                  scrolled ? 'text-black' : isDarkMode ? 'text-white' : 'text-black'
-                } hover:text-yellow-${scrolled ? '600' : '400'} transition-colors font-black text-sm uppercase relative`}
-                whileHover={{ y: -2 }}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                {item}
-                <motion.div
-                  className={`absolute -bottom-1 left-0 right-0 h-1 ${scrolled ? 'bg-black' : 'bg-yellow-400'}`}
-                  initial={{ scaleX: 0 }}
-                  whileHover={{ scaleX: 1 }}
-                  transition={{ duration: 0.2 }}
-                />
-              </motion.button>
-            ))}
-            <motion.button
-              onClick={toggleTheme}
-              className={`${
-                scrolled ? 'text-black' : isDarkMode ? 'text-white' : 'text-black'
-              } hover:text-yellow-400 transition-colors`}
-              whileHover={{ scale: 1.1, rotate: 180 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              {isDarkMode ? <Sun size={24} strokeWidth={3} /> : <Moon size={24} strokeWidth={3} />}
-            </motion.button>
-          </div>
         </div>
-      </motion.nav>
+      </header>
 
+      {/* FULL-SCREEN OVERLAY (Animated) */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            className="fixed inset-0 bg-yellow-400 z-40 lg:hidden"
-            initial={{ clipPath: 'circle(0% at 100% 0%)' }}
-            animate={{ clipPath: 'circle(150% at 100% 0%)' }}
-            exit={{ clipPath: 'circle(0% at 100% 0%)' }}
-            transition={{ duration: 0.5 }}
+            // --- Hard-coded to light theme (yellow/black) ---
+            className="fixed inset-0 z-[9000] bg-brand-yellow text-black p-6 flex flex-col justify-between"
+            variants={overlayVariants}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
           >
-            <div className="flex flex-col items-center justify-center h-full gap-8">
-              {['HOME', 'PHILOSOPHY', 'SERVICES', 'WORK', 'CONTACT'].map((item, index) => (
-                <motion.button
-                  key={item}
-                  onClick={() => scrollToSection(item.toLowerCase())}
-                  className="text-5xl text-black hover:scale-110 transition-all font-black uppercase"
-                  initial={{ opacity: 0, x: -50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 50 }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ scale: 1.1, x: 10 }}
+            {/* Top Bar of Overlay */}
+            <div className="flex justify-between items-center">
+              <span className="text-2xl font-display font-black">
+                FLUSH<span className="text-black">.</span>
+              </span>
+              <button
+                onClick={closeMenu}
+                className="font-display font-black text-xl p-2"
+                aria-label="Close Menu"
+              >
+                CLOSE <X size={20} className="inline" />
+              </button>
+            </div>
+
+            {/* Main Links */}
+            <motion.nav
+              className="flex flex-col items-center"
+              variants={linkContainerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+            >
+              {navLinks.map((link) => (
+                <motion.a
+                  key={link.title}
+                  href={link.href}
+                  onClick={closeMenu}
+                  className="font-display text-5xl md:text-7xl uppercase my-3 text-black transition-colors hover:text-white"
+                  variants={linkVariants}
                 >
-                  {item}
-                </motion.button>
+                  {link.title}
+                </motion.a>
               ))}
+            </motion.nav>
+
+            {/* Bottom Footer of Overlay */}
+            <div className="flex justify-between items-center text-sm font-bold">
+              <p>© {new Date().getFullYear()} Flushit Creative</p>
+              <div className="flex gap-4">
+                <a href="#" className="hover:text-white">
+                  Instagram
+                </a>
+                <a href="#" className="hover:text-white">
+                  LinkedIn
+                </a>
+              </div>
             </div>
           </motion.div>
         )}

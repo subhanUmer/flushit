@@ -1,35 +1,13 @@
-/**
- * HeroShowcase Component
- *
- * --- NEW, RELIABLE ANIMATION: "Shrink to Reveal" ---
- *
- * We are abandoning the 'expand' logic, which was buggy.
- * This new method is simpler, more robust, and achieves the same goal.
- *
- * 1. SLOWED DOWN: The GSAP 'end' is now "+=500vh",
- * making the whole transition much slower as requested.
- *
- * 2. LAYERING (In JSX):
- * - z-10: Video (Bottom layer, waits to be revealed)
- * - z-20: Canvas (Middle layer, animates away)
- * - z-30: Text (Top layer, fades first)
- *
- * 3. GSAP TIMELINE:
- * - Text fades and scales down.
- * - Canvas (with particles) animates its 'clip-path' from 150% to 0%.
- * - This "shrinking curtain" reveals the video (z-10) underneath.
- */
-
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Play, Pause, Volume2, VolumeX } from "lucide-react";
-import { useTheme } from "../App";
+// --- REMOVED useTheme ---
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { motion } from "framer-motion";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// List of images to load for the particles
+// ... (particleImagePaths list is unchanged) ...
 const particleImagePaths = [
   "/media/5k-challenge.png",
   "/media/5k-challenge-576x1024.png",
@@ -48,7 +26,7 @@ const particleImagePaths = [
 ];
 
 export default function HeroShowcase() {
-  const { isDarkMode } = useTheme();
+  // --- REMOVED useTheme ---
 
   // --- Refs for Animation ---
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -63,11 +41,7 @@ export default function HeroShowcase() {
 
   // --- STABLE: Use useRef for shared animation progress & theme ---
   const condenseProgress = useRef({ value: 0 });
-  const isDarkModeRef = useRef(isDarkMode);
-
-  useEffect(() => {
-    isDarkModeRef.current = isDarkMode;
-  }, [isDarkMode]);
+  // --- REMOVED isDarkModeRef and its useEffect ---
 
   // --- 1. Canvas Animation Logic (The Tornado) ---
   useEffect(() => {
@@ -82,6 +56,7 @@ export default function HeroShowcase() {
       currentTime = 0,
       delta = 0;
 
+    // ... (Particle class and logic is unchanged) ...
     const particles: any[] = [],
       particleCount = 60,
       particleImageSize = 150,
@@ -274,10 +249,9 @@ export default function HeroShowcase() {
         this.context.save();
         this.context.translate(this.x3D, this.y3D);
         this.context.rotate(this.rotation);
-        
-        // Let the GSAP timeline fade the *entire* canvas
-        this.context.globalAlpha = 1; 
-        
+
+        this.context.globalAlpha = 1;
+
         this.context.drawImage(
           this.image,
           -this.width3D / 2,
@@ -301,7 +275,8 @@ export default function HeroShowcase() {
     }
 
     function clearCanvas() {
-      context.fillStyle = isDarkModeRef.current ? "black" : "white";
+      // --- MODIFIED: Hard-coded to white ---
+      context.fillStyle = "white";
       context.fillRect(0, 0, canvas.width, canvas.height);
     }
     function update() {
@@ -344,7 +319,7 @@ export default function HeroShowcase() {
     };
   }, []);
 
-  // --- 2. MODIFIED: GSAP "Shrink to Reveal" Animation ---
+  // --- 2. GSAP "Shrink to Reveal" Animation (Unchanged) ---
   useEffect(() => {
     const component = componentRef.current;
     const content = contentRef.current;
@@ -360,7 +335,6 @@ export default function HeroShowcase() {
     )
       return;
 
-    // Set initial state of video to be visible (it's z-10)
     gsap.set(videoWrapper, { opacity: 1 });
 
     let ctx = gsap.context(() => {
@@ -368,14 +342,12 @@ export default function HeroShowcase() {
         scrollTrigger: {
           trigger: component,
           start: "top top",
-          // --- MODIFIED: SLOWED DOWN ANIMATION ---
-          end: "+=500vh", // Was 200vh
+          end: "+=500vh",
           scrub: 1,
           pin: true,
         },
       });
 
-      // 1. Fade out text (z-30)
       tl.to(
         content,
         {
@@ -384,10 +356,8 @@ export default function HeroShowcase() {
           duration: 0.5,
           ease: "power2.in",
         },
-        0 
+        0
       );
-
-      // 2. Condense particles (on canvas)
       tl.to(
         condenseProgress.current,
         {
@@ -395,28 +365,19 @@ export default function HeroShowcase() {
           duration: 1,
           ease: "power2.inOut",
         },
-        0.2 
+        0.2
       );
-
-      // 3. Shrink and fade out canvas (z-20)
-      // This is the "curtain" reveal
       tl.to(
         canvas,
         {
-          // Animate the 'clip-path' from full to zero
           clipPath: "circle(0% at 50% 50%)",
-          opacity: 0, // Also fade it out
-          scale: 0.8, // Add a slight scale down
+          opacity: 0,
+          scale: 0.8,
           duration: 1,
-          ease: "power2.inOut", // Ease in/out for a smoother shrink
+          ease: "power2.inOut",
         },
-        0.5 // Start this as particles are condensing
+        0.5
       );
-      
-      // 4. The video (z-10) is just... there.
-      // It is revealed as the canvas (z-20) shrinks.
-      // No animation needed on the video wrapper.
-
     }, component);
 
     return () => ctx.revert();
@@ -440,7 +401,6 @@ export default function HeroShowcase() {
       setIsMuted(!isMuted);
     }
   };
-
   const onVideoError = (e: any) => {
     console.error(
       "Video Error: Failed to load video. Check path and `public` folder.",
@@ -460,16 +420,9 @@ export default function HeroShowcase() {
 
   return (
     <section id="home" ref={componentRef} className="relative h-screen">
-      {/* --- MODIFIED: JSX LAYERING --- */}
       <div className="relative h-full w-full overflow-hidden">
-        
         {/* --- LAYER 1: The Video Player (z-10, Bottom) --- */}
-        <div
-          ref={videoWrapperRef}
-          className="absolute inset-0 z-10" // <-- z-10
-          // This layer is visible from the start,
-          // but it will be *covered* by the canvas.
-        >
+        <div ref={videoWrapperRef} className="absolute inset-0 z-10">
           <video
             ref={videoRef}
             className="absolute top-1/2 left-1/2 min-w-full min-h-full w-auto h-auto -translate-x-1/2 -translate-y-1/2 object-cover"
@@ -552,13 +505,13 @@ export default function HeroShowcase() {
         <canvas
           ref={canvasRef}
           id="canvas"
-          className="absolute inset-0 z-20" // <-- z-20
+          className="absolute inset-0 z-20"
           style={{
             width: "100%",
             height: "100%",
-            background: isDarkMode ? "black" : "white",
-            // This is the starting state for the clip-path
-            clipPath: "circle(150% at 50% 50%)", 
+            // --- MODIFIED: Hard-coded to white ---
+            background: "white",
+            clipPath: "circle(150% at 50% 50%)",
           }}
         />
 
@@ -571,9 +524,8 @@ export default function HeroShowcase() {
             <div>
               <h1 className="text-6xl md:text-8xl lg:text-9xl font-black mb-8 leading-none uppercase">
                 <span
-                  className={`block ${
-                    isDarkMode ? "text-white" : "text-black"
-                  }`}
+                  // --- MODIFIED: Hard-coded to light ---
+                  className={`block text-black`}
                 >
                   FLUSH
                 </span>
@@ -583,9 +535,8 @@ export default function HeroShowcase() {
               </h1>
               <div className="mb-12">
                 <p
-                  className={`text-2xl md:text-4xl font-bold ${
-                    isDarkMode ? "text-white" : "text-black"
-                  } mb-4`}
+                  // --- MODIFIED: Hard-coded to light ---
+                  className={`text-2xl md:text-4xl font-bold text-black mb-4`}
                 >
                   WE DON'T BRAINSTORM.
                 </p>
@@ -594,12 +545,11 @@ export default function HeroShowcase() {
                 </p>
               </div>
               <p
-                className={`text-xl md:text-2xl ${
-                  isDarkMode ? "text-gray-300" : "text-gray-700"
-                } mb-12 max-w-4xl mx-auto`}
+                // --- MODIFIED: Hard-coded to light ---
+                className={`text-xl md:text-2xl text-gray-700 mb-12 max-w-4xl mx-auto`}
               >
                 Stop swimming in bad ideas. Start making a splash.
-              </pre>
+              </p>
               <div className="flex flex-col sm:flex-row gap-6 items-center justify-center">
                 <button
                   onClick={() =>

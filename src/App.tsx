@@ -1,31 +1,21 @@
 import { useState, createContext, useContext, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import Hero from "./components/Hero";
-import VideoShowcase from "./components/VideoShowcase";
 import Services from "./components/Services";
 import Philosophy from "./components/Philosophy";
 import Portfolio from "./components/Portfolio-new";
 import Contact from "./components/Contact";
 import Navigation from "./components/Navigation";
+import HeroShowcase from "./components/HeroShowcase";
+import CustomCursor from "./components/CustomCursor";
+import Footer from "./components/Footer";
 
-interface ThemeContextType {
-  isDarkMode: boolean;
-  toggleTheme: () => void;
-}
-
-export const ThemeContext = createContext<ThemeContextType>({
-  isDarkMode: true,
-  toggleTheme: () => {},
-});
-
-export const useTheme = () => useContext(ThemeContext);
+// --- REMOVED ThemeContext and useTheme ---
 
 function App() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  // --- REMOVED isDarkMode state and toggleTheme function ---
   const { scrollYProgress } = useScroll();
 
-  // ADDED: New useEffect to load GSAP scripts globally
+  // ... (GSAP useEffect remains unchanged) ...
   useEffect(() => {
     // Check if GSAP is already loaded
     if (window.gsap && window.ScrollTrigger) {
@@ -74,56 +64,46 @@ function App() {
     };
   }, []); // Run only once on component mount
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
-  // Transform scroll progress - murky dark to bright yellow
+  // --- MODIFIED: Removed ternary, hard-coded to light theme ---
   const backgroundColor = useTransform(
     scrollYProgress,
     [0, 0.15, 0.3, 0.5],
-    isDarkMode
-      ? [
-          "rgb(20, 20, 20)", // Dark murky (almost black)
-          "rgb(40, 35, 30)", // Dark brown-gray (murky)
-          "rgb(251, 191, 36)", // Yellow-400 (bright flush)
-          "rgb(0, 0, 0)", // Black (final)
-        ]
-      : [
-          "rgb(245, 245, 245)", // Light gray
-          "rgb(250, 250, 250)", // Lighter gray
-          "rgb(251, 191, 36)", // Yellow-400 (bright flush)
-          "rgb(255, 255, 255)", // White (final)
-        ]
+    [
+      "rgb(245, 245, 245)", // Light gray
+      "rgb(250, 250, 250)", // Lighter gray
+      "rgb(251, 191, 36)", // Yellow-400 (bright flush)
+      "rgb(255, 255, 255)", // White (final)
+    ]
   );
 
   const backgroundOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   return (
-    <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
-      <div
-        className={`min-h-screen ${
-          isDarkMode ? "bg-black text-white" : "bg-white text-black"
-        } overflow-x-hidden relative`}
-      >
-        {/* Scroll-based color transition background */}
-        <motion.div
-          className="fixed inset-0 pointer-events-none z-0"
-          style={{ backgroundColor, opacity: backgroundOpacity }}
-        />
+    // --- REMOVED ThemeContext.Provider ---
+    <div
+      // --- MODIFIED: Hard-coded to light theme ---
+      className={`min-h-screen bg-white text-black overflow-x-hidden relative cursor-none`}
+    >
+      <CustomCursor />
 
-        {/* Content */}
-        <div className="relative z-10">
-          <Navigation isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
-          <Hero />
-          <VideoShowcase />
-          <Philosophy />
-          <Services />
-          <Portfolio />
-          <Contact />
-        </div>
+      {/* Scroll-based color transition background */}
+      <motion.div
+        className="fixed inset-0 pointer-events-none z-0"
+        style={{ backgroundColor, opacity: backgroundOpacity }}
+      />
+
+      {/* Content */}
+      <div className="relative z-10">
+        <Navigation />
+        <HeroShowcase />
+        <Philosophy />
+        <Services />
+        <Portfolio />
+        <Contact />
+        <Footer />
       </div>
-    </ThemeContext.Provider>
+    </div>
+    // --- REMOVED ThemeContext.Provider ---
   );
 }
 

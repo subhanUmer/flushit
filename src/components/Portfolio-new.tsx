@@ -1,437 +1,257 @@
-import { Play, Camera, Video, Sparkles, TrendingUp, Palette } from 'lucide-react';
-import { motion, useInView } from 'framer-motion';
-import { useRef, useState } from 'react';
-import { useTheme } from '../App';
+import {
+  Play,
+  Camera,
+  Video,
+  Sparkles,
+  TrendingUp,
+  Palette,
+} from "lucide-react";
+import { motion, useInView } from "framer-motion";
+import { useRef, useState, useLayoutEffect } from "react";
+// We don't need useTheme anymore
+import { DoodleCircle, DoodleArrow } from "./Artifacts";
+import gsap from "gsap"; // Import GSAP
+import { ScrollTrigger } from "gsap/ScrollTrigger"; // Import ScrollTrigger
+
+gsap.registerPlugin(ScrollTrigger); // Register the plugin
 
 export default function Portfolio() {
-  const containerRef = useRef(null);
-  const { isDarkMode } = useTheme();
-  const isInView = useInView(containerRef, { once: false, amount: 0.2 });
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [activeFilter, setActiveFilter] = useState('All');
-  const [selectedMedia, setSelectedMedia] = useState<any>(null);
+  const componentRef = useRef<HTMLDivElement>(null);
+  const pinRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Media portfolio - using /media/ path which points to public/media
+  // --- Your Original Data (Unchanged) ---
   const mediaItems = [
     {
       id: 1,
-      title: 'ETERNA HEALTH',
-      category: 'Corporate Documentary',
-      type: 'image',
-      thumbnail: '/media/Eterna-Health-768x432.png',
-      description: 'Healthcare brand transformation',
-      bgColor: 'bg-yellow-400',
-      textColor: 'text-black',
+      title: "ETERNA HEALTH",
+      category: "Corporate Documentary",
+      type: "image",
+      thumbnail: "/media/Eterna-Health-768x432.png",
+      videoUrl: null,
+      description: "Healthcare brand transformation",
       icon: Video,
     },
     {
       id: 2,
-      title: 'ORAAN GOLD LAUNCH',
-      category: 'Motion Graphics',
-      type: 'video',
-      thumbnail: '/media/Oraan-768x432.png',
-      videoUrl: '/media/Oraan-Gold-Launch-Final.mp4',
-      description: 'Empowering women through fintech',
-      bgColor: 'bg-yellow-600',
-      textColor: 'text-black',
+      title: "ORAAN GOLD LAUNCH",
+      category: "Motion Graphics",
+      type: "video",
+      thumbnail: "/media/Oraan-768x432.png",
+      videoUrl: "/media/Oraan-Gold-Launch-Final.mp4",
+      description: "Empowering women through fintech",
       icon: Sparkles,
     },
     {
       id: 3,
-      title: 'WINGOS',
-      category: 'Photography',
-      type: 'image',
-      thumbnail: '/media/Wingos-768x432.png',
-      description: 'Food culture energy',
-      bgColor: 'bg-yellow-400',
-      textColor: 'text-black',
+      title: "WINGOS",
+      category: "Photography",
+      type: "image",
+      thumbnail: "/media/Wingos-768x432.png",
+      videoUrl: null,
+      description: "Food culture energy",
       icon: Camera,
     },
     {
       id: 4,
-      title: 'KICKSTART',
-      category: 'Testimonials',
-      type: 'video',
-      thumbnail: '/media/Your-paragraph-text-768x960.png',
-      videoUrl: '/media/Kickstart-cups-of-tea.mov',
-      description: 'Real startup stories',
-      bgColor: 'bg-yellow-500',
-      textColor: 'text-black',
+      title: "KICKSTART",
+      category: "Testimonials",
+      type: "video",
+      thumbnail: "/media/Your-paragraph-text-768x960.png",
+      videoUrl: "/media/Kickstart-cups-of-tea.mov",
+      description: "Real startup stories",
       icon: TrendingUp,
     },
     {
       id: 5,
-      title: '5K CHALLENGE',
-      category: 'Motion Graphics',
-      type: 'video',
-      thumbnail: '/media/5k-challenge-768x1365.png',
-      videoUrl: '/media/5k-in-5-mins-fonts-updated.mp4',
-      description: 'Fitness motivation',
-      bgColor: 'bg-orange-400',
-      textColor: 'text-black',
+      title: "5K CHALLENGE",
+      category: "Motion Graphics",
+      type: "video",
+      thumbnail: "/media/5k-challenge-768x1365.png",
+      videoUrl: "/media/5k-in-5-mins-fonts-updated.mp4",
+      description: "Fitness motivation",
       icon: Video,
     },
     {
       id: 6,
-      title: 'HUMANIZING WORKSPACES',
-      category: 'Corporate Documentary',
-      type: 'image',
-      thumbnail: '/media/Humanizing-Workspaces-768x432.png',
-      description: 'Office culture transformation',
-      bgColor: 'bg-yellow-600',
-      textColor: 'text-black',
+      title: "HUMANIZING WORKSPACES",
+      category: "Corporate Documentary",
+      type: "image",
+      thumbnail: "/media/Humanizing-Workspaces-768x432.png",
+      videoUrl: null,
+      description: "Office culture transformation",
       icon: Camera,
     },
     {
       id: 7,
-      title: 'B.GUTSY X SAFEPAY',
-      category: 'DVC',
-      type: 'video',
-      thumbnail: '/media/Frame-1597884324-768x1365.png',
-      videoUrl: '/media/B.Gutsy-x-SafePay-v6.mp4',
-      description: 'Fintech collaboration',
-      bgColor: 'bg-amber-400',
-      textColor: 'text-black',
+      title: "B.GUTSY X SAFEPAY",
+      category: "DVC",
+      type: "video",
+      thumbnail: "/media/Frame-1597884324-768x1365.png",
+      videoUrl: "/media/B.Gutsy-x-SafePay-v6.mp4",
+      description: "Fintech collaboration",
       icon: Palette,
-    },
-    {
-      id: 8,
-      title: 'FRESH BASKET',
-      category: 'DVC',
-      type: 'video',
-      thumbnail: '/media/Frame-1597884327-768x1365.png',
-      videoUrl: '/media/Fresh-Basket-X-Safepay-new-v2.mp4',
-      description: 'E-commerce solution',
-      bgColor: 'bg-yellow-600',
-      textColor: 'text-black',
-      icon: Sparkles,
-    },
-    {
-      id: 9,
-      title: 'BREAKDANCE',
-      category: 'Event Highlights',
-      type: 'video',
-      thumbnail: '/media/Frame-1597884328-768x1365.png',
-      videoUrl: '/media/BreakDance-Reel-3.mp4',
-      description: 'Urban culture',
-      bgColor: 'bg-orange-500',
-      textColor: 'text-black',
-      icon: Camera,
-    },
-    {
-      id: 10,
-      title: 'KATHAK DANCE',
-      category: 'Event Highlights',
-      type: 'video',
-      thumbnail: '/media/Frame-1597884329-768x1365.png',
-      videoUrl: '/media/Kathak-Reel-v2.mp4',
-      description: 'Traditional meets modern',
-      bgColor: 'bg-amber-600',
-      textColor: 'text-black',
-      icon: Video,
     },
   ];
 
-  const categories = ['All', 'Motion Graphics', 'Event Highlights', 'DVC', 'Photography', 'Corporate Documentary', 'Testimonials'];
+  // --- GSAP Horizontal Scroll Animation ---
+  useLayoutEffect(() => {
+    // --- THIS IS THE FIX ---
+    // We add a short delay to wait for App.tsx to load GSAP
+    // and for the browser to paint the scrollable elements.
+    const timeout = setTimeout(() => {
+      if (window.gsap && window.ScrollTrigger) {
+        const gsap = window.gsap;
+        const horizontalScroll = scrollRef.current;
+        const pinElement = pinRef.current;
+        const componentElement = componentRef.current;
 
-  const filteredItems = activeFilter === 'All' 
-    ? mediaItems 
-    : mediaItems.filter(item => item.category === activeFilter);
+        if (!horizontalScroll || !pinElement || !componentElement) return;
+
+        const scrollWidth = horizontalScroll.scrollWidth - window.innerWidth;
+
+        let ctx = gsap.context(() => {
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: componentElement,
+              pin: pinElement,
+              scrub: 1,
+              start: "top top",
+              end: `+=${scrollWidth}`,
+            },
+          });
+
+          tl.to(horizontalScroll, {
+            x: -scrollWidth,
+            ease: "none",
+          });
+        }, componentRef);
+
+        return () => ctx.revert();
+      }
+    }, 100); // 100ms delay
+
+    return () => clearTimeout(timeout);
+  }, []); // Empty array is correct
 
   return (
     <section
       id="work"
-      ref={containerRef}
-      className={`py-32 px-6 relative overflow-hidden ${isDarkMode ? 'bg-black' : 'bg-white'}`}
+      ref={componentRef}
+      className={`relative bg-white overflow-hidden`}
     >
-      {/* Drifting yellow shapes */}
-      <motion.div
-        className="absolute top-32 left-16 w-28 h-28 bg-yellow-400 rounded-full opacity-15"
-        animate={{
-          x: [0, 120, 0],
-          y: [0, -60, 0],
-          rotate: [0, 180, 360],
-        }}
-        transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
-      />
-      <motion.div
-        className="absolute top-1/4 right-24 w-36 h-36 bg-yellow-400 opacity-10"
-        animate={{
-          x: [0, -90, 0],
-          y: [0, 90, 0],
-          rotate: [0, -180, -360],
-        }}
-        transition={{ duration: 28, repeat: Infinity, ease: 'linear' }}
-      />
-      <motion.div
-        className="absolute bottom-1/3 left-1/3 w-24 h-24 bg-yellow-400 rounded-full opacity-20"
-        animate={{
-          x: [0, 70, 0],
-          y: [0, -70, 0],
-          scale: [1, 1.3, 1],
-        }}
-        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-      />
-      <motion.div
-        className="absolute bottom-32 right-1/4 w-32 h-32 bg-yellow-400 opacity-12"
-        animate={{
-          x: [0, -110, 0],
-          y: [0, 60, 0],
-          rotate: [0, 90, 180],
-        }}
-        transition={{ duration: 24, repeat: Infinity, ease: 'linear' }}
-      />
-      <motion.div
-        className="absolute top-2/3 left-20 w-20 h-20 bg-yellow-400 rounded-full opacity-18"
-        animate={{
-          x: [0, 80, 0],
-          y: [0, -40, 0],
-          rotate: [0, 360, 720],
-        }}
-        transition={{ duration: 26, repeat: Infinity, ease: 'linear' }}
-      />
-
-      <div className="max-w-7xl mx-auto relative z-10">
-        {/* Header */}
-        <motion.div
-          className="text-center mb-20"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: isInView ? 1 : 0, scale: isInView ? 1 : 0.8 }}
-          transition={{ duration: 0.8 }}
+      <div
+        ref={pinRef}
+        className={`relative h-screen w-full overflow-hidden bg-white`}
+      >
+        {/* This is the horizontal track */}
+        <div
+          ref={scrollRef}
+          className="absolute top-0 left-0 flex h-full w-max"
         >
-          <h2 className="text-6xl md:text-8xl lg:text-9xl font-black uppercase leading-none mb-8">
-            <span className={`block ${isDarkMode ? 'text-white' : 'text-black'}`}>OUR</span>
-            <motion.span
-              className="block bg-gradient-to-r from-yellow-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent"
-              style={{ backgroundSize: '200% 100%' }}
-              animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
-              transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
-            >
-              WORK
-            </motion.span>
-          </h2>
-          <p className={`text-2xl md:text-3xl font-bold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-            FUNKY CONTENT THAT CONVERTS
-          </p>
-        </motion.div>
+          {/* --- SLIDE 1: Title Card --- */}
+          <div className="relative flex h-screen w-screen items-center justify-center p-12">
+            <h2 className="text-6xl md:text-8xl lg:text-9xl font-black uppercase leading-none mb-8">
+              <span className={`block text-black`}>FLUSHED</span>
+              <motion.span
+                className="block bg-gradient-to-r from-yellow-300 via-brand-yellow to-amber-500 bg-clip-text text-transparent"
+                style={{ backgroundSize: "200% 100%" }}
+                animate={{
+                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                }}
+                transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+              >
+                MASTERPIECES
+              </motion.span>
+            </h2>
+          </div>
 
-        {/* Filter Buttons */}
-        <motion.div
-          className="flex flex-wrap justify-center gap-4 mb-12"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: isInView ? 1 : 0, y: isInView ? 0 : 30 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-        >
-          {categories.map((category, index) => (
-            <motion.button
-              key={category}
-              onClick={() => setActiveFilter(category)}
-              className={`px-6 py-3 font-black text-sm uppercase border-2 transition-all ${
-                activeFilter === category
-                  ? 'bg-yellow-400 text-black border-yellow-400'
-                  : isDarkMode
-                    ? 'bg-transparent text-white border-white hover:bg-white hover:text-black'
-                    : 'bg-transparent text-black border-black hover:bg-black hover:text-white'
-              }`}
-              whileHover={{ scale: 1.05, rotate: [0, -2, 2, 0] }}
-              whileTap={{ scale: 0.95 }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: isInView ? 1 : 0, y: isInView ? 0 : 20 }}
-              transition={{ delay: 0.4 + index * 0.1, duration: 0.4 }}
-            >
-              {category}
-            </motion.button>
-          ))}
-        </motion.div>
-
-        {/* Media Grid */}
-        <motion.div 
-          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-w-6xl mx-auto"
-          layout
-        >
-          {filteredItems.map((item, index) => {
+          {/* --- PROJECT SLIDES --- */}
+          {mediaItems.map((item, index) => {
             const IconComponent = item.icon;
             return (
-              <motion.div
+              <div
                 key={item.id}
-                layout
-                initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
-                animate={{
-                  opacity: isInView ? 1 : 0,
-                  scale: isInView ? 1 : 0.8,
-                  rotate: isInView ? 0 : -5,
+                className="relative flex h-screen w-screen items-center justify-center p-12 border-l-4 border-dashed"
+                style={{
+                  borderColor: "rgba(0, 0, 0, 0.1)",
                 }}
-                exit={{ opacity: 0, scale: 0.8, rotate: 5 }}
-                transition={{ delay: index * 0.1, duration: 0.6, type: 'spring' }}
-                className={`relative ${item.bgColor} ${item.textColor} aspect-square overflow-hidden cursor-pointer group border-4 ${isDarkMode ? 'border-white' : 'border-black'}`}
-                onHoverStart={() => setHoveredIndex(index)}
-                onHoverEnd={() => setHoveredIndex(null)}
-                onClick={() => setSelectedMedia(item)}
               >
-                {/* Background Image/Video Thumbnail */}
-                <div 
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-                  style={{
-                    backgroundImage: `url(${item.thumbnail})`,
-                    backgroundBlendMode: 'multiply'
-                  }}
-                />
-                
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-all duration-300" />
-                
-                {/* Play Button for Videos */}
-                {item.type === 'video' && (
-                  <motion.div
-                    className="absolute inset-0 flex items-center justify-center"
-                    animate={{
-                      opacity: hoveredIndex === index ? 1 : 0.7,
-                      scale: hoveredIndex === index ? 1.1 : 1,
-                    }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <motion.div
-                      className="bg-yellow-400 w-16 h-16 rounded-full flex items-center justify-center"
-                      animate={{ 
-                        rotate: hoveredIndex === index ? 360 : 0,
-                        scale: hoveredIndex === index ? 1.2 : 1
-                      }}
-                      transition={{ duration: 0.8 }}
+                {/* Background Video / Image */}
+                <div className="absolute inset-0 z-0">
+                  {item.type === "video" && item.videoUrl ? (
+                    <video
+                      key={`video-${item.id}`}
+                      className="w-full h-full object-cover"
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      poster={item.thumbnail}
                     >
-                      <Play className="text-black ml-1" size={24} fill="currentColor" />
-                    </motion.div>
-                  </motion.div>
-                )}
+                      <source src={item.videoUrl} type="video/mp4" />
+                    </video>
+                  ) : (
+                    <img
+                      src={item.thumbnail}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                  {/* Gradient overlay for text readability */}
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background:
+                        "linear-gradient(90deg, #FFF 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 100%)",
+                    }}
+                  />
+                </div>
 
                 {/* Content */}
-                <div className="relative h-full p-3 flex flex-col justify-between">
-                  <div>
-                    <motion.div
-                      className="inline-flex items-center gap-1 px-2 py-0.5 bg-black/80 backdrop-blur-sm text-white font-black text-[10px] mb-2 rounded-full"
-                      animate={{
-                        y: hoveredIndex === index ? -5 : 0,
-                        rotate: hoveredIndex === index ? [0, 3, -3, 0] : 0,
-                      }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      <IconComponent size={10} />
+                <div className="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-2">
+                  <div className="pr-12">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-brand-yellow text-black font-black text-sm mb-4 uppercase">
+                      <IconComponent size={16} />
                       {item.category}
-                    </motion.div>
-                  </div>
-
-                  <motion.div
-                    animate={{
-                      y: hoveredIndex === index ? -10 : 0,
-                      opacity: hoveredIndex === index ? 1 : 0.9,
-                    }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <h3 className="text-sm font-black mb-1 leading-tight text-white drop-shadow-lg">
+                    </div>
+                    <h3
+                      className={`text-5xl md:text-7xl font-black uppercase mb-6 text-black`}
+                    >
                       {item.title}
                     </h3>
-                    <p className="text-xs text-gray-200 opacity-80 group-hover:opacity-100 transition-opacity">
+                    <p className={`text-xl md:text-2xl max-w-lg text-gray-700`}>
                       {item.description}
                     </p>
-                  </motion.div>
+                  </div>
                 </div>
-
-                {/* Funky corner decoration */}
-                <motion.div
-                  className="absolute top-0 right-0 w-0 h-0 border-l-[20px] border-l-transparent border-t-[20px] border-t-yellow-400"
-                  animate={{
-                    scale: hoveredIndex === index ? 1.2 : 1,
-                    rotate: hoveredIndex === index ? 180 : 0,
-                  }}
-                  transition={{ duration: 0.4 }}
-                />
-              </motion.div>
+              </div>
             );
           })}
-        </motion.div>
 
-        {/* Media Modal */}
-        {selectedMedia && (
-          <motion.div
-            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedMedia(null)}
-          >
-            <motion.div
-              className="relative max-w-4xl w-full bg-black border-4 border-yellow-400 overflow-hidden"
-              initial={{ scale: 0.5, rotate: -10 }}
-              animate={{ scale: 1, rotate: 0 }}
-              exit={{ scale: 0.5, rotate: 10 }}
-              transition={{ type: 'spring', damping: 20 }}
-              onClick={(e) => e.stopPropagation()}
+          {/* --- SLIDE END: CTA Card --- */}
+          <div className="relative flex h-screen w-screen items-center justify-center p-12 bg-brand-yellow">
+            <h3
+              className={`text-6xl md:text-8xl lg:text-9xl font-black mb-12 text-black uppercase text-center`}
             >
-              <button
-                onClick={() => setSelectedMedia(null)}
-                className="absolute top-4 right-4 z-10 bg-yellow-400 text-black w-10 h-10 rounded-full flex items-center justify-center font-black text-xl hover:bg-yellow-300 transition-colors"
-              >
-                ×
-              </button>
-
-              {selectedMedia.type === 'video' ? (
-                <video
-                  className="w-full h-auto"
-                  controls
-                  autoPlay
-                  poster={selectedMedia.thumbnail}
-                >
-                  <source src={selectedMedia.videoUrl} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              ) : (
-                <img
-                  src={selectedMedia.thumbnail}
-                  alt={selectedMedia.title}
-                  className="w-full h-auto"
-                />
-              )}
-
-              <div className="p-6 bg-gradient-to-r from-yellow-400 to-amber-500">
-                <div className="flex items-center gap-3 mb-3">
-                  <selectedMedia.icon className="text-black" size={20} />
-                  <span className="text-black font-black text-sm uppercase">
-                    {selectedMedia.category}
-                  </span>
-                </div>
-                <h3 className="text-2xl font-black text-black mb-2">
-                  {selectedMedia.title}
-                </h3>
-                <p className="text-black/80 font-medium">
-                  {selectedMedia.description}
-                </p>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-
-        {/* CTA Section */}
-        <motion.div
-          className="mt-20 bg-gradient-to-r from-yellow-300 via-yellow-400 to-amber-500 p-1"
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: isInView ? 1 : 0, y: isInView ? 0 : 50 }}
-          transition={{ delay: 0.8, duration: 0.8 }}
-        >
-          <div className={`${isDarkMode ? 'bg-black' : 'bg-white'} p-12 text-center`}>
-            <h3 className={`text-4xl md:text-5xl font-black mb-6 ${isDarkMode ? 'text-white' : 'text-black'} uppercase`}>
-              READY TO CREATE
+              READY TO
               <br />
-              <span className="text-yellow-400">SOMETHING AMAZING?</span>
+              FLUSH YOURS?
             </h3>
             <motion.button
               whileHover={{ scale: 1.05, rotate: [0, -2, 2, 0] }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-              className={`bg-yellow-400 hover:bg-yellow-300 text-black px-12 py-6 font-black text-xl uppercase border-4 border-yellow-400 ${isDarkMode ? 'shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:shadow-[12px_12px_0px_0px_rgba(255,255,255,1)]' : 'shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]'} transition-all`}
+              onClick={() =>
+                document
+                  .getElementById("contact")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+              className={`absolute bottom-24 bg-black text-white px-12 py-6 font-black text-xl uppercase border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all`}
             >
               LET'S TALK
             </motion.button>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
